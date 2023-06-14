@@ -1,77 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="description" content="">
-	<meta name="author" content="">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-	<title>Potree Viewer</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Potree Viewer</title>
 
-	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
-	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
-</head>
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../libs/jquery-ui/jquery-ui.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../libs/spectrum/spectrum.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../libs/jstree/themes/mixed/style.css"
+    />
+  </head>
 
-<body>
-	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
-	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/other/BinaryHeap.js"></script>
-	<script src="../libs/tween/tween.min.js"></script>
-	<script src="../libs/d3/d3.js"></script>
-	<script src="../libs/proj4/proj4.js"></script>
-	<script src="../libs/openlayers3/ol.js"></script>
-	<script src="../libs/i18next/i18next.js"></script>
-	<script src="../libs/jstree/jstree.js"></script>
-	<script src="../build/potree/potree.js"></script>
-	<script src="../libs/plasio/js/laslaz.js"></script>
-	
-	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
-	
-	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
-		<div id="potree_sidebar_container"> </div>
-	</div>
-	
-	<script type="module">
+  <body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
 
-	import * as THREE from "../libs/three.js/build/three.module.js";
-	
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
-		viewer.setEDLEnabled(true);
-		viewer.setFOV(60);
-		viewer.setPointBudget(1_000_000);
-		viewer.loadSettingsFromURL();
-		
-		viewer.setDescription("Loading Octree of LAS files");
-		
-		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
-			$("#menu_appearance").next().show();
-			//viewer.toggleSidebar();
-		});
-		
-		// Sigeom
-		Potree.loadPointCloud("../pointclouds/lion_takanawa_las/cloud.js", "lion", function(e){
-			viewer.scene.addPointCloud(e.pointcloud);
-			
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			
-			e.pointcloud.position.x += 3;
-			e.pointcloud.position.y -= 3;
-			e.pointcloud.position.z += 4;
-			
-			viewer.fitToScreen();
-		});
-		
-	</script>
-	
-	
+    <!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+    <!-- INCLUDE SETTINGS HERE -->
+
+    <div
+      class="potree_container"
+      style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px"
+    >
+      <div
+        id="potree_render_area"
+        style="
+          background-image: url('../build/potree/resources/images/background.jpg');
+        "
+      ></div>
+      <div id="potree_sidebar_container"></div>
+    </div>
+
+    <script type="module">
+      import * as THREE from "../libs/three.js/build/three.module.js";
+      let i = 0;
+      window.viewer = new Potree.Viewer(
+        document.getElementById("potree_render_area")
+      );
+      //viewer.setDescription(`<button id="myButton">Next Image</button> `);
+      viewer.setEDLEnabled(true);
+      viewer.setFOV(60);
+      viewer.setPointBudget(1_000_000);
+      viewer.loadSettingsFromURL();
+      viewer.loadGUI(() => {
+        viewer.setLanguage("en");
+        $("#menu_appearance").next().show();
+      });
+
+      function isMobileDevice() {
+        // Check for a specific mobile user agent string or screen size
+        // Modify this condition based on your requirements
+        console.log("fduihsdfju8iyshdfgyusifdhkjsdfhyuik", navigator.userAgent);
+        return (
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          ) || window.innerWidth <= 768
+        );
+      }
+
+      // Execute code only for the mobile version
+      if (isMobileDevice()) {
+        // Your mobile-specific code here
+        console.log("Running on a mobile device");
+        viewer.setDescription(`<button id="myButton">Next Image</button> `);
+        var button = document.getElementById("myButton");
+        button.addEventListener("click", function () {
+          i++;
+          console.log("sdujksdn", i);
+          //   viewer.scene.orientedImages[0].moveToImage(
+          //     viewer.scene.orientedImages[0].images[i]
+          //   );
+          viewer.scene.images360[0].focus(viewer.scene.images360[0].images[i]);
+          //removeAssets(viewer);
+        });
+      } else {
+        // Your web-specific code here
+        console.log("Running on the web", navigator.userAgent);
+      }
+      // Add a click event listener to the button
+      //   button.addEventListener("click", function () {
+      //     i++;
+      //     nextPanoImage(viewer);
+      //     // viewer.scene.orientedImages[0].moveToImage(
+      //     //   viewer.scene.orientedImages[0].images[i]
+      //     // );
+      //     //viewer.scene.images360[0].focus(viewer.scene.images360[0].images[i]);
+      //     //removeAssets(viewer);
+      //   });
+      let viewerMode = "image";
+      // Sigeom
+      Potree.loadPointCloud(
+        "https://constructn-projects-us.s3.us-west-2.amazonaws.com/PRJ957090/structures/STR527991/snapshots/SNP153355/reality/RLT166449/pointcloud/cloud.js",
+        "lion",
+        function (e) {
+          viewer.scene.addPointCloud(e.pointcloud);
+
+          let scene = viewer.scene;
+          let pointcloud = e.pointcloud;
+
+          let material = pointcloud.material;
+          material.size = 0.5;
+          material.minSize = 2.0;
+          material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+          material.shape = Potree.PointShape.SQUARE;
+          material.activeAttributeName = "rgba";
+          let pcMatrix = new THREE.Matrix4().set(
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1
+          );
+          let pcOffset = [0, 0, 0];
+          pcMatrix = new THREE.Matrix4()
+            .fromArray([
+              1.000465, 0.003179, 0.000021, -10232.804688, -0.003179, 1.000465,
+              0.000031, -231.655838, -0.000021, -0.000031, 1.00047, -1272.54834,
+              0.0, 0.0, 0.0, 1.0,
+            ])
+            .transpose();
+          pointcloud.applyMatrix(pcMatrix);
+          const assetPosition = pointcloud.position.clone();
+          pointcloud.position.set(
+            assetPosition.x - pcOffset[0],
+            assetPosition.y - pcOffset[1],
+            assetPosition.z - pcOffset[2]
+          );
+          scene.addPointCloud(pointcloud);
+          viewer.fitToScreen();
+          run();
+        }
+      );
+      //   async function run() {
+      //     viewerMode = "image";
+      //     let pcOffset = [0, 0, 0];
+      //     Potree.OrientedImageLoader.load(
+      //       "https://constructn-projects.s3.ap-south-1.amazonaws.com/PRJ156801/structures/STR238477/snapshots/SNP076949/images.json",
+      //       "https://constructn-projects.s3.ap-south-1.amazonaws.com/PRJ156801/structures/STR238477/snapshots/SNP076949/images",
+      //       viewer,
+      //       { tm: new THREE.Matrix4(), offset: pcOffset }
+      //     ).then((images) => {
+      //       console.log("images", images);
+      //       viewer.scene.addOrientedImages(images);
+      //       viewer.scene.orientedImages[0].moveToImage(
+      //         viewer.scene.orientedImages[0].images[i]
+      //       );
+      //     });
+
+      //viewer.mapView.showSources(false);
+      //}
+      //360 images loading
+      async function run() {
+        let pcOffset = [0, 0, 0];
+        Potree.Images360Loader.load(
+          "https://constructn-projects-us.s3.us-west-2.amazonaws.com/PRJ957090/structures/STR527991/snapshots/SNP153355/reality/RLT166449/images.json",
+          "https://constructn-projects-us.s3.us-west-2.amazonaws.com/PRJ957090/structures/STR527991/snapshots/SNP153355/reality/RLT166449/images",
+          viewer,
+          { tm: new THREE.Matrix4(), offset: pcOffset }
+        ).then((images) => {
+          viewer.scene.add360Images(images);
+          viewer.scene.images360[0].focus(viewer.scene.images360[0].images[i]);
+        });
+
+        //viewer.mapView.showSources(false);
+      }
+
+      //   function removeAssets(viewer) {
+      //     viewer.scene.scenePointCloud.remove(viewer.scene.pointclouds[0]);
+      //     viewer.scene.pointclouds = [];
+      //     if (viewer.scene.orientedImages.length) {
+      //       viewer.scene.orientedImages[0].release();
+      //       viewer.scene.orientedImages[0].images.forEach((image) => {
+      //         viewer.scene.scene.children[0].remove(image.mesh);
+      //         viewer.scene.scene.children[0].remove(image.line);
+      //       });
+      //       viewer.scene.scene.remove(viewer.scene.scene.children[0]);
+      //       viewer.scene.removeOrientedImages(viewer.scene.orientedImages[0]);
+      //     }
+
+      //     if (viewer.scene.images360.length) {
+      //       viewer.scene.images360[0].unfocus(false);
+      //       viewer.scene.images360[0].images.forEach((image) => {
+      //         viewer.scene.scene.children[0].remove(image.mesh);
+      //       });
+      //       viewer.scene.scene.children[0].remove(
+      //         viewer.scene.images360[0].sphere
+      //       );
+      //       viewer.scene.scene.remove(viewer.scene.scene.children[0]);
+      //       viewer.scene.remove360Images(viewer.scene.images360[0]);
+      //     }
+      //     if (viewer.isFloorMap) {
+      //       removeFloorMap(viewer);
+      //     }
+      //   }
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          // Exit in viewer 2 is already handled in contex maintanance
+          if (viewerMode == "image") {
+            viewer.controls.elExit.click();
+          }
+          // else if (viewerMode == 'panorama') {
+          //     viewer.scene.images360[0].unfocus();
+          // }
+        } else if (event.key === "ArrowUp") {
+          // up arrow
+          if (viewerMode == "image") {
+            viewer.controls.elUp.click();
+            // if (isCompareMode && compareType == "potree") {
+            //   viewer_2.controls.elUp.click();
+            // }
+          } else if (viewerMode == "panorama") {
+            if (event.ctrlKey) {
+              setPitch(viewer, 0.5);
+              //   if (isCompareMode && compareType == "potree") {
+              //     setPitch(viewer_2, 0.5);
+              //   }
+            } else {
+              nextPanoImage(viewer);
+            }
+          }
+        } else if (event.key === "ArrowDown") {
+          // down arrow
+          if (viewerMode == "image") {
+            viewer.controls.elDown.click();
+            if (isCompareMode && compareType == "potree") {
+              viewer_2.controls.elDown.click();
+            }
+          } else if (viewerMode == "panorama") {
+            if (event.ctrlKey) {
+              setPitch(viewer, -0.5);
+              if (isCompareMode && compareType == "potree") {
+                setPitch(viewer_2, -0.5);
+              }
+            }
+          }
+        } else if (event.key === "ArrowLeft") {
+          // left arrow
+          if (viewerMode == "image") {
+            viewer.controls.elLeft.click();
+            if (isCompareMode && compareType == "potree") {
+              viewer_2.controls.elLeft.click();
+            }
+          } else if (viewerMode == "panorama") {
+            setYaw(viewer, 0.5);
+            if (isCompareMode && compareType == "potree") {
+              setYaw(viewer_2, 0.5);
+            }
+          }
+        } else if (event.key === "ArrowRight") {
+          // right arrow
+          if (viewerMode == "image") {
+            viewer.controls.elRight.click();
+            if (isCompareMode && compareType == "potree") {
+              viewer_2.controls.elRight.click();
+            }
+          } else if (viewerMode == "panorama") {
+            setYaw(viewer, -0.5);
+            if (isCompareMode && compareType == "potree") {
+              setYaw(viewer_2, -0.5);
+            }
+          }
+        }
+      });
+      //   function nextPanoImage(viewer) {
+      //     let cameraInstance = viewer.scene.cameraP;
+      //     const camDir = new THREE.Vector3();
+      //     cameraInstance.getWorldDirection(camDir);
+      //     camDir.normalize();
+      //     const camPos = cameraInstance.position;
+      //     const weightages = { angle: 0.5, distance: 0.5 };
+      //     let totalSum = 10000;
+      //     let curSum;
+      //     let selectedPanoImageId;
+      //     let cameraViewProjectionMatrix;
+      //     let imgPos;
+      //     let dist;
+      //     let angle;
+      //     let frustum;
+      //     const camToImgDir = new THREE.Vector3();
+      //     const maxDist = 10;
+      //     const panoImgs = viewer.scene.images360[0].images;
+
+      //     for (let i = 0; i < panoImgs.length; i++) {
+      //       if (panoImgs[i].file == viewer.scene.images360[0].focusedImage.file) {
+      //         continue;
+      //       }
+      //       imgPos = new THREE.Vector3().fromArray(panoImgs[i].position);
+      //       frustum = new THREE.Frustum();
+      //       cameraViewProjectionMatrix = new THREE.Matrix4();
+      //       cameraInstance.updateMatrixWorld(); // make sure the camera matrix is updated
+      //       // cameraInstance.matrixWorldInverse.getInverse(cameraInstance.matrixWorld);
+      //       cameraInstance.matrixWorldInverse
+      //         .copy(cameraInstance.matrixWorld)
+      //         .invert();
+      //       cameraViewProjectionMatrix.multiplyMatrices(
+      //         cameraInstance.projectionMatrix,
+      //         cameraInstance.matrixWorldInverse
+      //       );
+      //       frustum.setFromMatrix(cameraViewProjectionMatrix);
+
+      //       // // if (frustum.containsPoint(imgPos)) {
+      //       dist = imgPos.distanceTo(camPos);
+      //       if (dist < maxDist) {
+      //         camToImgDir.subVectors(imgPos, camPos).normalize();
+      //         angle = Math.abs(camToImgDir.angleTo(camDir));
+      //         // tslint:disable-next-line: no-string-literal
+      //         curSum =
+      //           weightages["angle"] * angle + weightages["distance"] * dist;
+      //         if (curSum < totalSum) {
+      //           selectedPanoImageId = i;
+      //           totalSum = curSum;
+      //         }
+      //       }
+      //       // // }
+
+      //       // dist = imgPos.distanceTo(camPos);
+      //       // if (dist < maxDist) {
+      //       //     camToImgDir.subVectors(imgPos, camPos).normalize();
+      //       //     angle = Math.abs(camToImgDir.angleTo(camDir));
+      //       //     // tslint:disable-next-line: no-string-literal
+      //       //     // curSum = (weightages['angle'] * angle) + (weightages['distance'] * dist);
+      //       //     if (angle < totalSum) {
+      //       //         selectedPanoImageId = i;
+      //       //         totalSum = angle;
+      //       //     }
+      //       // }
+      //     }
+      //     if (selectedPanoImageId != undefined) {
+      //       viewer.scene.images360[0].focus(panoImgs[selectedPanoImageId]);
+      //     } else {
+      //       console.warn("No Nearest 360 Images");
+      //     }
+      //   }
+    </script>
   </body>
 </html>

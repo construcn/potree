@@ -29,15 +29,24 @@ export class OrientedImageControls extends EventDispatcher{
 
 		this.shear = [0, 0];
 
+		this.changeEvent = new CustomEvent("camerachange");
+
+
 		// const style = ``;
-		this.elUp =    $(`<input type="button" value="🡅" style="position: absolute; top: 10px; left: calc(50%); z-index: 1000" />`);
-		this.elRight = $(`<input type="button" value="🡆" style="position: absolute; top: calc(50%); right: 10px; z-index: 1000" />`);
-		this.elDown =  $(`<input type="button" value="🡇" style="position: absolute; bottom: 10px; left: calc(50%); z-index: 1000" />`);
-		this.elLeft =  $(`<input type="button" value="🡄" style="position: absolute; top: calc(50%); left: 10px; z-index: 1000" />`);
-		this.elExit = $(`<input type="button" value="Back to 3D view" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000" />`);
+		this.elUp =    $(`<input type="button" value="🡅" style="position: absolute; top: 10px; left: calc(50%); z-index: 1000; display: none" />`);
+		this.elRight = $(`<input type="button" value="🡆" style="position: absolute; top: calc(50%); right: 10px; z-index: 1000; display: none" />`);
+		this.elDown =  $(`<input type="button" value="🡇" style="position: absolute; bottom: 10px; left: calc(50%); z-index: 1000; display: none" />`);
+		this.elLeft =  $(`<input type="button" value="🡄" style="position: absolute; top: calc(50%); left: 10px; z-index: 1000; display: none" />`);
+		this.elExit = $(`<input type="button" value="Back to 3D view" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000; display: none" />`);
 
 		this.elExit.click( () => {
 			this.release();
+			const event = new CustomEvent("imageUnload", {
+				detail: {
+					viewer: this.viewer.canvasId
+				}
+			});
+			document.dispatchEvent(event);
 		});
 
 		this.elUp.click(() => {
@@ -68,7 +77,13 @@ export class OrientedImageControls extends EventDispatcher{
 		this.sceneControls = new THREE.Scene();
 
 		let scroll = (e) => {
-			this.fovDelta += -e.delta * 1.0;
+			// this.fovDelta += -e.delta * 1.0;
+			this.shear = [0, 0];
+			let fov = this.viewer.getFOV() + (-e.delta * 5);
+			if (fov > 10 && fov < 100) {
+				this.viewer.setFOV(fov);
+				document.dispatchEvent(this.changeEvent)
+			}
 		};
 
 		this.addEventListener('mousewheel', scroll);
@@ -103,9 +118,13 @@ export class OrientedImageControls extends EventDispatcher{
 		elRoot.append(this.elDown);
 		elRoot.append(this.elLeft);
 		elRoot.append(this.elExit);
+
+		this.viewer.setFOV(30);
+
 	}
 
 	release(){
+
 		this.image = null;
 
 		this.viewer.scene.overrideCamera = null;
@@ -117,7 +136,13 @@ export class OrientedImageControls extends EventDispatcher{
 		this.elExit.detach();
 
 		this.viewer.setFOV(this.originalFOV);
+		this.viewer.scene.cameraP.fov = this.originalFOV;
 		this.viewer.setControls(this.originalControls);
+		this.viewer.controls.enabled = true;
+	}
+
+	stop() {
+		this.release();
 	}
 
 	setScene (scene) {

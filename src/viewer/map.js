@@ -305,7 +305,7 @@ export class MapView{
 		};
 
 		this.on360ImagesAdded = e => {
-			this.addImages360(e.images);
+			// this.addImages360(e.images);
 		};
 
 		this.onAnnotationAdded = e => {
