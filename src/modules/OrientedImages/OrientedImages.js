@@ -390,15 +390,7 @@ export class OrientedImageLoader {
     const moveToImage = async (image, sendEvent = true) => {
       viewer.controls.enabled = false;
 
-      if (sendEvent) {
-        const event = new CustomEvent("imageLoad", {
-          detail: {
-            viewer: viewer.canvasId,
-            image,
-          },
-        });
-        document.dispatchEvent(event);
-      }
+      
 
       const mesh = image.mesh;
       const target = image;
@@ -407,7 +399,16 @@ export class OrientedImageLoader {
       const newCamTarget = mesh.position.clone();
 
       viewer.scene.view.setView(newCamPos, newCamTarget);
-
+	if (sendEvent) {
+        const event = new CustomEvent("imageLoad", {
+          detail: {
+            viewer: viewer.canvasId,
+            image,
+          },
+        });
+        document.dispatchEvent(event);
+      }
+	  
       function loadImageTexture(path) {
         return new Promise((resolve, reject) => {
           new THREE.TextureLoader().load(path, (texture) => {
