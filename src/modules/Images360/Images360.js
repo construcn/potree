@@ -107,7 +107,14 @@ export class Images360 extends EventDispatcher{
 		};
 		this.viewer.setControls(this.viewer.orbitControls);
 		this.viewer.orbitControls.doubleClockZoomEnabled = false;
-		let index = this.images.findIndex( element => {
+		if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) ||
+        (window.innerWidth <= 768))
+        {
+          
+        let index = this.images.findIndex( element => {
 		if (element.file === image360.file) {
 		return true;
 		}
@@ -145,6 +152,11 @@ export class Images360 extends EventDispatcher{
 			this.images[i].mesh.visible = true
 		
 		this.selectingEnabled = true;
+		}
+		else
+		{
+			this.selectingEnabled = false;
+		}
 		this.sphere.visible = false;
 		this.load(image360).then( () => {
 			this.sphere.visible = true;
@@ -347,9 +359,15 @@ export class Images360Loader{
 			const fileBNumber = getFileNumber(b.file);
 			return fileANumber.localeCompare(fileBNumber);
 		});
-		
-		Images360Loader.createSceneNodes(images360, params.transform);
 
+		if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) ||
+        (window.innerWidth <= 768))
+        {
+           Images360Loader.createSceneNodes(images360, params.transform);
+        }
 		return images360;
 
 	}
