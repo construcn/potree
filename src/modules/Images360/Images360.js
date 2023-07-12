@@ -54,11 +54,25 @@ export class Images360 extends EventDispatcher{
 		this.addEventListener("mousedown", () => {
 			if(this.currentlyHovered && this.currentlyHovered.image360){
 				this.focus(this.currentlyHovered.image360);
+				const event = new CustomEvent("onRingClick", {
+                    detail: {
+                        viewer: this.viewer.canvasId,
+                        image: this.currentlyHovered.image360
+                    }
+                });
+                document.dispatchEvent(event);
 			}
 		});
 		this.addEventListener("touchend", () => {
 			if(this.currentlyHovered && this.currentlyHovered.image360){
 				this.focus(this.currentlyHovered.image360);
+				const event = new CustomEvent("onRingClick", {
+                    detail: {
+                        viewer: this.viewer.canvasId,
+                        image: this.currentlyHovered.image360
+                    }
+                });
+                document.dispatchEvent(event);
 			}
 		});
 	};
@@ -106,15 +120,9 @@ export class Images360 extends EventDispatcher{
 			target: this.viewer.scene.view.getPivot(),
 		};
 		this.viewer.setControls(this.viewer.orbitControls);
+		this.viewer.orbitControls.isInterior = true;
 		this.viewer.orbitControls.doubleClockZoomEnabled = false;
-		if (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) ||
-        (window.innerWidth <= 768))
-        {
-          
-        let index = this.images.findIndex( element => {
+		let index = this.images.findIndex( element => {
 		if (element.file === image360.file) {
 		return true;
 		}
@@ -132,31 +140,27 @@ export class Images360 extends EventDispatcher{
 			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
 			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 			let dist = current.distanceTo(next)
-			while(dist < 0.5 && i > 0) {
+			while(dist < 3 && i > -1) {
 				i--
 				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 				dist = current.distanceTo(next)
 			}
-			this.images[i].mesh.visible = true
+			if(i>-1)this.images[i].mesh.visible = true
 			
 		}
 			let i = index + 1
 			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
 			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 			let dist = current.distanceTo(next)
-			while(dist < 0.5) {
+			while(dist < 3 && i<this.images.length) {
 				i++
 				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 				dist = current.distanceTo(next)
 			}
-			this.images[i].mesh.visible = true
+			if(i<this.images.length)this.images[i].mesh.visible = true
 		
 		this.selectingEnabled = true;
-		}
-		else
-		{
-			this.selectingEnabled = false;
-		}
+		
 		this.sphere.visible = false;
 		this.load(image360).then( () => {
 			this.sphere.visible = true;
@@ -210,6 +214,7 @@ export class Images360 extends EventDispatcher{
 		let newCamPos = target.clone().sub(move);
 
 		this.viewer.orbitControls.doubleClockZoomEnabled = true;
+		this.viewer.orbitControls.isInterior = false;
 		this.viewer.setControls(this.previousView.controls);
 		this.focusedImage = null;
 		
@@ -360,15 +365,8 @@ export class Images360Loader{
 			return fileANumber.localeCompare(fileBNumber);
 		});
 
-		if (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) ||
-        (window.innerWidth <= 768))
-        {
-           Images360Loader.createSceneNodes(images360, params.transform);
-        }
-		return images360;
+		 Images360Loader.createSceneNodes(images360);
+			return images360;
 
 	}
 

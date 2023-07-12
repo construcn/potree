@@ -37,7 +37,7 @@ export class OrbitControls extends EventDispatcher {
     this.radiusDelta = 0;
 
     this.doubleClockZoomEnabled = true;
-
+	this.isInterior=false
     this.tweens = [];
 
     this.changeEvent = new CustomEvent("camerachange");
@@ -275,16 +275,13 @@ export class OrbitControls extends EventDispatcher {
 
       yaw -= progression * this.yawDelta;
       pitch -= progression * this.pitchDelta;
-
-		if(pitch < -1 * 0.3)
-		{
-			pitch= -1 * 0.3
-		}
-		else if(pitch > 1.3)
-		{
-			pitch = 1.3
-		}
-		
+	if (this.isInterior) {
+      if (pitch < -1 * 0.3) {
+        pitch = -1 * 0.3;
+      } else if (pitch > 1.3) {
+        pitch = 1.3;
+      }
+    }	
       view.yaw = yaw;
       view.pitch = pitch;
 
