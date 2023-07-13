@@ -43,8 +43,8 @@ export class Images360 extends EventDispatcher{
 			target: null,
 		};
 		this.raycaster = new THREE.Raycaster();
-		this.hoverMaterial = new THREE.MeshBasicMaterial({side: THREE.BackSide});
-		
+		this.hoverMaterial = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:''});
+		this.sm = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:'#FF843F'});
 		viewer.addEventListener("update", () => {
 			this.update(viewer);
 		});
@@ -291,7 +291,7 @@ export class Images360 extends EventDispatcher{
 		let intersection = intersections[0];
 		if(intersection.object.image360.circleMesh.visible===true)
 		{
-		this.currentlyHovered = intersection.object;
+		this.currentlyHovered = intersection.object.parent.children[0];
 		this.currentlyHovered.material = this.hoverMaterial;
 		}
 		
@@ -301,7 +301,7 @@ export class Images360 extends EventDispatcher{
 
 		let {viewer} = this;
 		if(this.currentlyHovered){
-			this.currentlyHovered.material = this.handleHovering;
+			this.currentlyHovered.material = this.sm;
 			this.currentlyHovered = null;
 		}
 
