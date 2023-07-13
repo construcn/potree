@@ -43,8 +43,7 @@ export class Images360 extends EventDispatcher{
 			target: null,
 		};
 		this.raycaster = new THREE.Raycaster();
-		this.hoverMaterial = new THREE.MeshBasicMaterial({side: THREE.DoubleSide});
-		this.sm = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:'#FF843F'});
+		this.hoverMaterial = new THREE.MeshBasicMaterial({side: THREE.BackSide});
 		
 		viewer.addEventListener("update", () => {
 			this.update(viewer);
@@ -84,7 +83,7 @@ export class Images360 extends EventDispatcher{
 
 
 		for(const image of this.images){
-			image.mesh.visible = visible && (this.focusedImage == null);
+			image.circleMesh.visible = visible && (this.focusedImage == null);
 		}
 
 		this.sphere.visible = visible && (this.focusedImage != null);
@@ -129,8 +128,9 @@ export class Images360 extends EventDispatcher{
 		});
 		
 		for(let image of this.images){
-			
-			image.mesh.visible = false;
+
+			image.circleMesh.visible = false;
+			image.ringMesh.visible=false
 		}
 		
 		if(index != 0)
@@ -145,7 +145,11 @@ export class Images360 extends EventDispatcher{
 				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 				dist = current.distanceTo(next)
 			}
-			if(i>-1)this.images[i].mesh.visible = true
+			if(i>-1)
+			{
+			this.images[i].circleMesh.visible = true
+			this.images[i].ringMesh.visible = true	
+			}
 			
 		}
 			let i = index + 1
@@ -157,7 +161,11 @@ export class Images360 extends EventDispatcher{
 				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 				dist = current.distanceTo(next)
 			}
-			if(i<this.images.length)this.images[i].mesh.visible = true
+			if(i<this.images.length)
+			{
+			this.images[i].circleMesh.visible = true
+			this.images[i].ringMesh.visible = true	
+			}
 		
 		this.selectingEnabled = true;
 		
@@ -276,12 +284,12 @@ export class Images360 extends EventDispatcher{
 		let ray = Potree.Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 		this.raycaster.ray.copy(ray);
 		let intersections = this.raycaster.intersectObjects(this.images.map(image=>{
-			return image.mesh}));
+			return image.circleMesh}));
 		if(intersections.length === 0){
 			return;
 		}
 		let intersection = intersections[0];
-		if(intersection.object.image360.mesh.visible===true)
+		if(intersection.object.image360.circleMesh.visible===true)
 		{
 		this.currentlyHovered = intersection.object;
 		this.currentlyHovered.material = this.hoverMaterial;
@@ -292,9 +300,8 @@ export class Images360 extends EventDispatcher{
 	update(){
 
 		let {viewer} = this;
-
 		if(this.currentlyHovered){
-			this.currentlyHovered.material = this.sm;
+			this.currentlyHovered.material = this.handleHovering;
 			this.currentlyHovered = null;
 		}
 
@@ -374,14 +381,24 @@ export class Images360Loader{
 
 		for(let image360 of images360.images){
 			let {longitude, latitude, altitude} = image360;
-			let mesh = new THREE.Mesh(new THREE.RingGeometry( 0.5, 1, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#FF843F'}));
-			mesh.position.set(longitude, latitude, altitude - 2.0);
-			mesh.scale.set(1, 1, 1);
-			mesh.material.transparent = true;
-			mesh.material.opacity = 0.75;
-			mesh.image360 = image360;
-			images360.node.add(mesh);
-			image360.mesh = mesh;
+			let ringMesh = new THREE.Mesh(new THREE.RingGeometry( 0.5, 1, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#FF843F'}));
+			ringMesh.position.set(longitude, latitude, altitude - 2.0);
+			ringMesh.scale.set(1, 1, 1);
+			ringMesh.material.transparent = true;
+			ringMesh.material.opacity = 0.75;
+			ringMesh.image360 = image360;
+			let circleMesh = new THREE.Mesh(new THREE.CircleGeometry( 1, 32 ), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+			circleMesh.position.set(longitude, latitude, altitude - 2.0);
+			circleMesh.scale.set(1, 1, 1);
+			circleMesh.material.transparent = true;
+			circleMesh.material.opacity = 0;
+			circleMesh.image360 = image360;
+			const group = new THREE.Group();
+			group.add( ringMesh );
+			group.add( circleMesh );
+			images360.node.add(group);
+			image360.circleMesh = circleMesh;
+			image360.ringMesh = ringMesh;
 		}
 	}
 };
