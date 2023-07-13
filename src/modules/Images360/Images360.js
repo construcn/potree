@@ -155,7 +155,7 @@ export class Images360 extends EventDispatcher{
 			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
 			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 			let dist = current.distanceTo(next)
-			while(dist < 3 && i<this.images.length) {
+			while(dist < 3 && i<this.images.length-1) {
 				i++
 				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 				dist = current.distanceTo(next)
