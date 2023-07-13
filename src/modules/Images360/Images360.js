@@ -12,7 +12,8 @@ class Image360{
 		this.course = course;
 		this.pitch = pitch;
 		this.roll = roll;
-		this.mesh = null;
+		this.ringGroup=null
+		this.visibleRings=[]
 	}
 };
 
@@ -27,7 +28,7 @@ export class Images360 extends EventDispatcher{
 
 		this.images = [];
 		this.node = new THREE.Object3D();
-
+		this.visibleRings=[]		
 		this.sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 128), new THREE.MeshBasicMaterial({side: THREE.BackSide}));
 		this.sphere.visible = false;
 		this.sphere.scale.set(-1000, 1000, 1000);
@@ -83,7 +84,7 @@ export class Images360 extends EventDispatcher{
 
 
 		for(const image of this.images){
-			image.circleMesh.visible = visible && (this.focusedImage == null);
+			image.ringGroup.visible = visible && (this.focusedImage == null);
 		}
 
 		this.sphere.visible = visible && (this.focusedImage != null);
@@ -128,9 +129,7 @@ export class Images360 extends EventDispatcher{
 		});
 		
 		for(let image of this.images){
-
-			image.circleMesh.visible = false;
-			image.ringMesh.visible=false
+			image.ringGroup.visible=false
 		}
 		
 		if(index != 0)
@@ -140,15 +139,15 @@ export class Images360 extends EventDispatcher{
 			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
 			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 			let dist = current.distanceTo(next)
-			while(dist < 3 && i > -1) {
+			while(dist < 3 && i > 0) {
 				i--
 				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
 				dist = current.distanceTo(next)
 			}
 			if(i>-1)
 			{
-			this.images[i].circleMesh.visible = true
-			this.images[i].ringMesh.visible = true	
+			this.images[i].ringGroup.visible = true
+			this.visibleRings.push(this.images[i])
 			}
 			
 		}
@@ -163,8 +162,8 @@ export class Images360 extends EventDispatcher{
 			}
 			if(i<this.images.length)
 			{
-			this.images[i].circleMesh.visible = true
-			this.images[i].ringMesh.visible = true	
+			this.images[i].ringGroup.visible = true
+			this.visibleRings.push(this.images[i])	
 			}
 		
 		this.selectingEnabled = true;
@@ -283,13 +282,13 @@ export class Images360 extends EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		let ray = Potree.Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 		this.raycaster.ray.copy(ray);
-		let intersections = this.raycaster.intersectObjects(this.images.map(image=>{
-			return image.circleMesh}));
+		let intersections = this.raycaster.intersectObjects(this.visibleRings.map(image=>{
+			return image.ringGroup.children[1]}));
 		if(intersections.length === 0){
 			return;
 		}
 		let intersection = intersections[0];
-		if(intersection.object.image360.circleMesh.visible===true)
+		if(intersection.object.parent.visible===true)
 		{
 		this.currentlyHovered = intersection.object.parent.children[0];
 		this.currentlyHovered.material = this.hoverMaterial;
@@ -381,24 +380,23 @@ export class Images360Loader{
 
 		for(let image360 of images360.images){
 			let {longitude, latitude, altitude} = image360;
-			let ringMesh = new THREE.Mesh(new THREE.RingGeometry( 0.5, 1, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#FF843F'}));
+			let ringMesh = new THREE.Mesh(new THREE.RingGeometry( 0.35, .5, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#FF843F'}));
 			ringMesh.position.set(longitude, latitude, altitude - 2.0);
 			ringMesh.scale.set(1, 1, 1);
 			ringMesh.material.transparent = true;
 			ringMesh.material.opacity = 0.75;
 			ringMesh.image360 = image360;
-			let circleMesh = new THREE.Mesh(new THREE.CircleGeometry( 1, 32 ), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+			let circleMesh = new THREE.Mesh(new THREE.CircleGeometry( .5, 32 ), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
 			circleMesh.position.set(longitude, latitude, altitude - 2.0);
 			circleMesh.scale.set(1, 1, 1);
 			circleMesh.material.transparent = true;
 			circleMesh.material.opacity = 0;
 			circleMesh.image360 = image360;
-			const group = new THREE.Group();
-			group.add( ringMesh );
-			group.add( circleMesh );
-			images360.node.add(group);
-			image360.circleMesh = circleMesh;
-			image360.ringMesh = ringMesh;
+			const ringGroup = new THREE.Group();
+			ringGroup.add( ringMesh );
+			ringGroup.add( circleMesh );
+			images360.node.add(ringGroup);
+			image360.ringGroup=ringGroup
 		}
 	}
 };
