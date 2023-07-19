@@ -1,0 +1,3603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Potree Viewer</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../libs/jquery-ui/jquery-ui.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../libs/spectrum/spectrum.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../libs/jstree/themes/mixed/style.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
+      type="text/css"
+    />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="./colorextension_optimized.js"></script>
+    <script>
+      (function (h, o, t, j, a, r) {
+        h.hj =
+          h.hj ||
+          function () {
+            (h.hj.q = h.hj.q || []).push(arguments);
+          };
+        h._hjSettings = { hjid: 2746579, hjsv: 6 };
+        a = o.getElementsByTagName("head")[0];
+        r = o.createElement("script");
+        r.async = 1;
+        r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+        a.appendChild(r);
+      })(window, document, "https://static.hotjar.com/c/hotjar-", ".js?sv=");
+    </script>
+    <style>
+      .dropup .dropdown-menu,
+      .navbar-fixed-bottom .dropdown .dropdown-menu {
+        bottom: 5%;
+        background-color: rgba(34, 34, 34, 0.94);
+      }
+      .dropdown-menu {
+        min-width: 230px;
+        left: 50px;
+      }
+      .panoIcon {
+        background: greenyellow;
+        border-radius: 100%;
+        position: absolute;
+        z-index: 101;
+        opacity: 0.7;
+      }
+
+      .panoIcon:hover {
+        background: rgb(0, 217, 255);
+        cursor: pointer;
+        opacity: 1;
+      }
+
+      .userIcon {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        z-index: 1000;
+      }
+
+      .actionIcon {
+        font-size: 50px;
+        /* border-style: double; */
+        color: white;
+        border-radius: 10px;
+        background-color: rgba(34, 34, 34, 0.94);
+        display: inline-block;
+        position: relative;
+      }
+
+      .actionIcon:hover {
+        cursor: pointer;
+      }
+
+      .fpFullScreen {
+        position: absolute;
+        top: 1%;
+        right: 1%;
+      }
+
+      .fpFullScreen:hover {
+        cursor: pointer;
+      }
+
+      .actionButtons {
+        position: absolute;
+        bottom: 10px;
+        width: calc(100% - 20px);
+        height: 50px;
+        text-align: center;
+        z-index: 100;
+        display: none;
+      }
+
+      .floormap {
+        position: absolute;
+        right: 0px;
+        top: 10px;
+        z-index: 100;
+        display: none;
+      }
+
+      .goto3d {
+        right: 2%;
+        position: absolute;
+        display: none;
+      }
+
+      .noBIM {
+        background: #e1e1e1;
+        margin: 0 auto;
+        position: absolute;
+        z-index: 200;
+        top: 25%;
+        left: 25%;
+        height: calc(100% - 50%);
+        width: calc(100% - 50%);
+        padding: 30px;
+        -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        display: none;
+        text-align: center;
+        vertical-align: middle;
+      }
+      .utility_icons {
+        position: relative;
+        cursor: pointer;
+        padding: 6px;
+        margin: 4px;
+        border: 1px solid rgba(34, 34, 34, 0);
+        border-radius: 4px;
+        display: inline-block;
+        padding-top: 3px;
+        font-size: 24px;
+        line-height: 1;
+        background-repeat: no-repeat;
+        background-position: 50%;
+      }
+      .actionButtonsTest {
+        color: #f4f4f4;
+        background-color: rgba(34, 34, 34, 0.94);
+        box-shadow: 1px 3px 10px 0 rgb(0 0 0 / 50%);
+        position: relative;
+        float: left;
+        cursor: pointer;
+        padding: 6px;
+        margin: 4px;
+        border: 1px solid rgba(34, 34, 34, 0);
+        border-radius: 4px;
+      }
+      .icon-test {
+        padding: 5px;
+      }
+      .icon-test:hover {
+        color: #f5ca52;
+        border: 1px solid #f5ca52;
+      }
+      .icon-test:focus {
+        color: #f5ca52;
+        outline: none;
+        border-radius: 3px;
+        box-shadow: inset 0 2px 2px 0 #000;
+      }
+      .s3-icon {
+        width: 30px;
+        height: 30px;
+        margin: 2px;
+      }
+      #datepickerLeft,
+      #datepickerRight {
+        color: #000;
+        padding: 4px;
+        margin-right: 5px;
+      }
+      .closeBtn {
+        position: absolute;
+        float: left;
+        z-index: 9;
+      }
+      .bim-legend-container {
+        right: 10px;
+        bottom: 10px;
+        position: absolute;
+        background-color: rgba(34, 34, 34, 0.94);
+        z-index: 2;
+        display: none;
+      }
+
+      .bim-legend {
+        list-style: none;
+      }
+      .bim-legend li {
+        margin-right: 10px;
+        color: #f4f4f4;
+        cursor: pointer;
+      }
+      .bim-legend span {
+        border: 1px solid #ccc;
+        float: left;
+        width: 12px;
+        height: 12px;
+        margin: 2px;
+      }
+      .bim-legend .not_started {
+        background-color: #ff0000;
+      }
+      .bim-legend .in_progress {
+        background-color: #f39b3a;
+      }
+      .bim-legend .complete {
+        background-color: #71e03a;
+      }
+
+      .bim-details-card {
+        float: right;
+        width: 20%;
+        /* background:rgb(249, 247, 249); */
+        right: 1%;
+        top: 50%;
+        height: 25%;
+        position: absolute;
+        z-index: 2;
+        display: none;
+      }
+
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        background-color: #dddddd;
+      }
+
+      .bim-card-close {
+        right: 0px;
+        top: 0px;
+        z-index: 2;
+        position: absolute;
+      }
+
+      .bim-card-close:hover {
+        /* background: rgb(0, 217, 255); */
+        cursor: pointer;
+        /* opacity: 1; */
+      }
+    </style>
+  </head>
+
+  <body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+
+    <div
+      id="viewer_1"
+      style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px"
+    >
+      <div id="fpContainer_1" class="floormap" onclick="actionIconClick()">
+        <i
+          title="fullscreen"
+          id="fp_fullscreen_1"
+          data='{"id": "viewer_1", "type": "fp_fullscreen"}'
+          class="material-icons fpFullScreen"
+          >fullscreen</i
+        >
+        <i
+          title="minimise"
+          id="fp_minimise_1"
+          data='{"id": "viewer_1", "type": "fp_fullscreen"}'
+          class="material-icons fpFullScreen"
+          style="display: none"
+          >fullscreen_exit</i
+        >
+        <canvas id="floormap_1"></canvas>
+      </div>
+      <div id="no_bim_1" class="noBIM">
+        <p>Data Not Available</p>
+      </div>
+      <div
+        id="bim_details_card_container_1"
+        class="bim-details-card"
+        onclick="actionIconClick()"
+      >
+        <i
+          data='{"id": "viewer_1", "type": "bim_card_close"}'
+          class="material-icons bim-card-close"
+          >clear</i
+        >
+        <div id="bim_details_card_1"></div>
+      </div>
+      <div
+        id="bim_legend_1"
+        class="bim-legend-container bim-legend"
+        onclick="actionIconClick()"
+      >
+        <li
+          id="bim_not_started"
+          data='{"id": "viewer_1", "type": "bim_legend"}'
+        >
+          <span class="not_started"></span> Not Started
+        </li>
+        <li
+          id="bim_in_progress"
+          data='{"id": "viewer_1", "type": "bim_legend"}'
+        >
+          <span class="in_progress"></span> In Progress
+        </li>
+        <li id="bim_complete" data='{"id": "viewer_1", "type": "bim_legend"}'>
+          <span class="complete"></span> Complete
+        </li>
+      </div>
+      <div
+        id="action_buttons_1"
+        onclick="actionIconClick()"
+        class="actionButtons"
+      >
+        <div class="dropup actionButtonsTest">
+          <input class="datepickerDigi" type="text" id="datepickerLeft" />
+        </div>
+        <div title="bim compare" class="dropup actionButtonsTest">
+          <img
+            id="bim_compare_view_1"
+            data='{"id": "viewer_1", "type":"bim-compare"}'
+            src="https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/3d-bim1.png"
+            class="s3-icon"
+          />
+        </div>
+        <div class="dropup actionButtonsTest">
+          <i
+            title="timeline compare"
+            id="compare_view_1"
+            data='{"id": "viewer_1", "type": "compare"}'
+            class="material-icons icon-test"
+            >compare</i
+          >
+        </div>
+        <div class="dropup actionButtonsTest">
+          <i
+            title="point cloud"
+            id="3d_view_1"
+            data='{"id": "viewer_1", "type": "3d"}'
+            class="material-icons icon-test"
+            style="display: none"
+            >3d_rotation</i
+          >
+        </div>
+        <div class="dropup actionButtonsTest">
+          <i
+            title="show images"
+            id="cameras_on_1"
+            data='{"id": "viewer_1", "type": "cameras", "condition": "on"}'
+            class="material-icons icon-test"
+            style="display: none"
+            >photo_camera</i
+          >
+          <i
+            title="hide images"
+            id="cameras_off_1"
+            data='{"id": "viewer_1", "type": "cameras", "condition": "off"}'
+            class="material-icons icon-test"
+            style="display: none"
+            >no_photography</i
+          >
+        </div>
+
+        <div class="dropup actionButtonsTest">
+          <i
+            id="measure_top_1"
+            data='{"id": "viewer_1", "type": "measure"}'
+            title="measure"
+            data-toggle="dropdown"
+            class="material-icons icon-test"
+            >straighten</i
+          >
+          <ul id="measure_tool_1" class="dropdown-menu" style="margin: unset">
+            <i
+              title="point"
+              data='{"id": "viewer_1", "type": "point"}'
+              class="material-icons icon-test"
+              >gps_fixed</i
+            >
+            <i
+              title="distance"
+              data='{"id": "viewer_1", "type": "distance"}'
+              class="material-icons icon-test"
+              >timeline</i
+            >
+            <i
+              title="area"
+              data='{"id": "viewer_1", "type": "area"}'
+              class="material-icons icon-test"
+              >crop</i
+            >
+            <i
+              title="height"
+              data='{"id": "viewer_1", "type": "height"}'
+              class="material-icons icon-test"
+              >height</i
+            >
+            <i
+              title="clear"
+              data='{"id": "viewer_1", "type": "clear"}'
+              class="material-icons icon-test"
+              >clear</i
+            >
+            <i
+              title="save"
+              data='{"id": "viewer_1", "type": "save"}'
+              class="material-icons icon-test"
+              >save</i
+            >
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div
+      id="viewer_2"
+      style="
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        right: 0px;
+        top: 0px;
+        display: none;
+      "
+    >
+      <div id="fpContainer_2" class="floormap" onclick="actionIconClick()">
+        <i
+          title="fullscreen"
+          id="fp_fullscreen_2"
+          data='{"id": "viewer_2", "type": "fp_fullscreen"}'
+          class="material-icons fpFullScreen"
+          >fullscreen</i
+        >
+        <i
+          title="minimise"
+          id="fp_minimise_2"
+          data='{"id": "viewer_2", "type": "fp_fullscreen"}'
+          class="material-icons fpFullScreen"
+          style="display: none"
+          >fullscreen_exit</i
+        >
+        <canvas id="floormap_2"></canvas>
+      </div>
+      <div id="no_bim_2" class="noBIM">
+        <p>Data Not Available</p>
+      </div>
+
+      <div
+        id="bim_details_card_container_2"
+        class="bim-details-card"
+        onclick="actionIconClick()"
+      >
+        <i
+          data='{"id": "viewer_2", "type": "bim_card_close"}'
+          class="material-icons bim-card-close"
+          >clear</i
+        >
+        <div id="bim_details_card_2"></div>
+      </div>
+
+      <div
+        id="bim_legend_2"
+        class="bim-legend-container bim-legend"
+        onclick="actionIconClick()"
+      >
+        <li
+          title="not srated"
+          id="bim_not_started"
+          data='{"id": "viewer_2", "type": "bim_legend"}'
+        >
+          <span class="not_started"></span> Not Started
+        </li>
+        <li
+          title="in progress"
+          id="bim_in_progress"
+          data='{"id": "viewer_2", "type": "bim_legend"}'
+        >
+          <span class="in_progress"></span> In Progress
+        </li>
+        <li
+          title="completed"
+          id="bim_complete"
+          data='{"id": "viewer_2", "type": "bim_legend"}'
+        >
+          <span class="complete"></span> Complete
+        </li>
+      </div>
+      <div
+        id="action_buttons_2"
+        onclick="actionIconClick()"
+        class="actionButtons"
+      >
+        <div class="dropup actionButtonsTest">
+          <input class="datepickerDigi" type="text" id="datepickerRight" />
+        </div>
+        <div title="bim compare" class="dropup actionButtonsTest">
+          <img
+            id="bim_compare_view_2"
+            data='{"id": "viewer_2", "type" : "bim-compare"}'
+            src="https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/3d-bim1.png"
+            class="s3-icon"
+          />
+        </div>
+        <div class="dropup actionButtonsTest">
+          <i
+            title="timeline compare"
+            id="compare_view_2"
+            data='{"id": "viewer_2", "type": "3d"}'
+            class="material-icons icon-test"
+            >compare</i
+          >
+        </div>
+        <div class="dropup actionButtonsTest">
+          <i
+            title="point cloud"
+            id="3d_view_2"
+            data='{"id": "viewer_2", "type": "3d"}'
+            class="material-icons icon-test"
+            style="display: none"
+            >3d_rotation</i
+          >
+        </div>
+
+        <div class="dropup actionButtonsTest">
+          <i
+            title="show images"
+            id="cameras_on_2"
+            data='{"id": "viewer_2", "type": "cameras", "condition": "on"}'
+            class="material-icons icon-test"
+            style="display: none"
+            >photo_camera</i
+          >
+          <i
+            title="hide images"
+            id="cameras_off_2"
+            data='{"id": "viewer_2", "type": "cameras", "condition": "off"}'
+            class="material-icons icon-test"
+            style="display: none"
+            >no_photography</i
+          >
+        </div>
+
+        <div class="dropup actionButtonsTest">
+          <i
+            id="measure_top_2"
+            data='{"id": "viewer_2", "type": "measure"}'
+            title="measure"
+            data-toggle="dropdown"
+            class="material-icons icon-test"
+            >straighten</i
+          >
+          <ul id="measure_tool_2" class="dropdown-menu" style="margin: unset">
+            <i
+              title="point"
+              data='{"id": "viewer_2", "type": "point"}'
+              class="material-icons icon-test"
+              >gps_fixed</i
+            >
+            <i
+              title="distance"
+              data='{"id": "viewer_2", "type": "distance"}'
+              class="material-icons icon-test"
+              >timeline</i
+            >
+            <i
+              title="area"
+              data='{"id": "viewer_2", "type": "area"}'
+              class="material-icons icon-test"
+              >crop</i
+            >
+            <i
+              title="height"
+              data='{"id": "viewer_2", "type": "height"}'
+              class="material-icons icon-test"
+              >height</i
+            >
+            <i
+              title="clear"
+              data='{"id": "viewer_2", "type": "clear"}'
+              class="material-icons icon-test"
+              >clear</i
+            >
+            <i
+              title="save"
+              data='{"id": "viewer_2", "type": "save"}'
+              class="material-icons icon-test"
+              >save</i
+            >
+          </ul>
+        </div>
+      </div>
+      <div class="closeBtn actionButtonsTest" onclick="actionIconClick()">
+        <i
+          title="close compare"
+          data='{"id": "viewer_2", "type": "compare-close"}'
+          class="material-icons icon-test"
+          >clear</i
+        >
+      </div>
+    </div>
+
+    <script type="module">
+      // http://localhost:4200/examples/tourWrapperAdv.html?project=16&snapshot1=12&snapshot2=11&isExterior=0&isFM=1&mode=compare_bim
+      // http://localhost:4200/examples/tourWrapperAdv.html?project=25&snapshot1=16&snapshot2=17&isExterior=1&isFM=0&mode=compare_bim
+
+      function getParameterByName(name, url = window.location.href) {
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return "";
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+      function doAPIcall(in_url, in_method, in_token) {
+        return new Promise((resolve, reject) => {
+          $.ajax({
+            url: in_url,
+            method: in_method,
+            headers: {
+              authorization: "Bearer " + in_token,
+            },
+
+            success: (rawData) => {
+              console.log(rawData);
+              resolve(rawData);
+            },
+            error: (e) => {
+              console.log(e);
+              resolve(null);
+            },
+          });
+        });
+      }
+      const mainProjectID = getParameterByName("project");
+      const structure_id = getParameterByName("structure");
+      const inTilesetID = getParameterByName("snapshot1");
+      const inTilesetID2 = getParameterByName("snapshot2");
+      // const isExterior = parseInt(getParameterByName('isExterior'));
+      // const isFloorMap = parseInt(getParameterByName('isFM'));
+      const mode = getParameterByName("mode");
+      const token = getParameterByName("token"); //'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJVU1IzOTA4OTUiLCJmaXJzdE5hbWUiOiJLcmlzaG5hIFRlamEiLCJsYXN0TmFtZSI6IlRhbmdhdHVyaSIsImVtYWlsIjoia3RkYWlpY3RAZ21haWwuY29tIiwiY29udGFjdCI6eyJjb2RlIjoiKzkxIiwibnVtYmVyIjo5Njc2MzE2MzIzfSwiZG9iIjoiMTk4OS0wMi0xNlQwMDowMDowMC4wMDBaIiwidmVyaWZpZWQiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjItMDMtMjJUMTI6MTY6MzAuODk0WiIsInVwZGF0ZWRBdCI6IjIwMjItMDMtMjJUMTI6MTc6NTMuMTIyWiIsIl9fdiI6MCwiZnVsbE5hbWUiOiJLcmlzaG5hIFRlamEgVGFuZ2F0dXJpIiwiYWdlIjozMywiaWF0IjoxNjUxNzY4MDExLCJleHAiOjE2NTE3NzE2MTF9.xJT4oa55tODe7KzK7YkYM62NrpgJfWzusbevVggL_Vg'
+      // const structure_id = 'STR772693' //getParameterByName('structure');
+      const inProjectID = structure_id;
+      const structure_id_details = await doAPIcall(
+        "https://api.dev.constructn.ai/api/v1/projects/" +
+          mainProjectID +
+          "/structures/" +
+          structure_id,
+        "GET",
+        token
+      );
+      console.log(
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+      );
+      // console.log(structure_id_details)
+
+      const isExterior = structure_id_details["result"]["isExterior"] ? 1 : 0;
+
+      const isFloorMap = structure_id_details["result"]["isExterior"] ? 0 : 1;
+
+      console.log("Exterior : ", isExterior);
+
+      const inputCamera = JSON.parse(getParameterByName("camera"));
+      console.log("Input Camera ", inputCamera);
+
+      const inputTag = JSON.parse(getParameterByName("tag"));
+      console.log("Input Tag", inputTag);
+
+      let isCompareMode = false;
+      let isMouseOnV1 = true;
+      let compareType = "potree";
+      let viewerMode = "image";
+      let syncPotreeEvent = false;
+      let syncForgeEvent = false;
+      let bimProgressData = {};
+      let bimProgressMode = false;
+      var tagToAddOnImageLoad = null;
+      let progress_walk_index = 0;
+      let progress_walk_mode = false;
+
+      let s3_bucket = "constructn-projects"; //'digitrack-projects'
+
+      import * as THREE from "../libs/three.js/build/three.module.js";
+      // initFirstPotree();
+      // window.compareMode = compareMode;
+      // window.loadSnapshot = loadSnapshot;
+      // window.closeCompareMode = closeCompareMode;
+      // window.addMeasure = addMeasure;
+      // window.removeMeasure = removeMeasure;
+      window.actionIconClick = actionIconClick;
+      window.locate = locate;
+      window.getInverse = getInverse;
+      window.select_group_bim = select_group_bim;
+      window.bimDefaultView = bimDefaultView;
+      window.remove_group_bim = remove_group_bim;
+      window.addTag = addTag;
+      window.start_progress_delta_walk = start_progress_delta_walk;
+      window.exit_progress_walk = exit_progress_walk;
+      window.update_progress_walk = update_progress_walk;
+
+      if (mode == "3d") {
+        initFirstPotree();
+      } else if (mode == "compare_3d") {
+        initFirstPotree();
+        compareMode("potree");
+      } else if (mode == "compare_bim") {
+        initFirstPotree();
+        compareMode("forge");
+      } else if (mode == "bim") {
+        viewerMode = "3d";
+        initForge(inProjectID, inTilesetID, "viewer_1", inputCamera);
+        // document.getElementById('fpContainer_2').style.display = 'none';
+      }
+
+      window.addEventListener("message", function (e) {
+        console.log("From Parent : ", e.data);
+        if (e.data.type == "getCamera") {
+          let cam = locate(viewer_1);
+          console.log("Sending Camera Details to Parent : ", cam);
+          window.top.postMessage(
+            { type: "camera", data: JSON.stringify(cam) },
+            "*"
+          );
+        } else if (e.data.type == "context") {
+          flyToContext(e.data.data);
+        } else if (e.data.type == "select-tag") {
+          let tagData = JSON.parse(e.data.data);
+          console.log(tagData);
+          flyToTagContext(tagData);
+        } else if (e.data.type == "bim-grouping") {
+          let data = e.data.data;
+          if (viewer_1.customtype == "forge") {
+            select_group_bim(data.guids, viewer_1, data.mode, data.condition);
+          } else if (compareMode && viewer_2.customtype == "forge") {
+            select_group_bim(data.guids, viewer_2, data.mode, data.condition);
+          }
+        } else if (e.data.type == "reset-bim-grouping") {
+          if (viewer_1.customtype == "forge") {
+            remove_group_bim(viewer_1, e.data.data.mode);
+          } else if (compareMode && viewer_2.customtype == "forge") {
+            remove_group_bim(viewer_2, e.data.data.mode);
+          }
+        }
+      });
+
+      function initFirstPotree() {
+        if (inTilesetID == "") {
+          document.getElementById("no_bim_1").style.display = "block";
+        } else {
+          window.viewer_1 = new Potree.Viewer(
+            document.getElementById("viewer_1")
+          );
+          viewer_1.setFOV(60);
+          viewer_1.setPointBudget(1 * 1000 * 1000);
+          document.title = "";
+          viewer_1.setEDLEnabled(false);
+          viewer_1.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+          viewer_1.setDescription(``);
+          viewer_1.loadSettingsFromURL();
+          viewer_1.canvasId = "viewer_1";
+          viewer_1.customtype = "potree";
+
+          viewer_1.loadGUI(async () => {
+            viewer_1.setLanguage("en");
+            console.log("VIewer_1 Loaded");
+            viewer_1.fpContainerId = "fpContainer_1";
+            viewer_1.fpCanvasId = "floormap_1";
+            loadSnapshot(
+              viewer_1,
+              inProjectID,
+              inTilesetID,
+              false,
+              inputCamera
+            );
+            viewer_1.tileset = inTilesetID;
+            toggleVisibility("action_buttons_1", true);
+            addEventListeners();
+          });
+        }
+      }
+
+      function addEventListeners() {
+        document
+          .getElementById("viewer_1")
+          .addEventListener("mouseenter", () => {
+            isMouseOnV1 = true;
+          });
+        document
+          .getElementById("viewer_2")
+          .addEventListener("mouseenter", () => {
+            isMouseOnV1 = false;
+          });
+
+        document.addEventListener("imageLoad", (event) => {
+          console.log("imageLoad ", event.detail.viewer, event.detail.image);
+          viewer_1.scene.removeAllMeasurements();
+          if (isCompareMode && compareType == "potree") {
+            viewer_2.scene.removeAllMeasurements();
+          }
+          viewerMode = "image";
+          toggleVisibility("3d_view_1", true);
+          toggleVisibility("3d_view_2", true);
+
+          if (event.detail.viewer == "viewer_1") {
+            viewer_1.cur_loaded_image = event.detail.image.id;
+          } else {
+            viewer_2.cur_loaded_image = event.detail.image.id;
+          }
+
+          if (isCompareMode) {
+            if (compareType == "forge") {
+              setForgeControls("image");
+            } else {
+              maintainContext(event.detail.viewer, event.detail.image);
+            }
+          }
+          pointCloudView(true);
+
+          setTimeout(() => {
+            if (tagToAddOnImageLoad != null) {
+              console.log("Adding Tag");
+              console.log(tagToAddOnImageLoad["info"]);
+              addTag(
+                tagToAddOnImageLoad["info"],
+                tagToAddOnImageLoad["viewer"]
+              );
+              tagToAddOnImageLoad = null;
+            }
+          }, 100);
+        });
+
+        document.addEventListener("imageUnload", (event) => {
+          console.log("imageUnload ", event.detail.viewer);
+          toggleVisibility("3d_view_1", false);
+          toggleVisibility("3d_view_2", false);
+          viewer_1.scene.removeAllClipVolumes(); // To remove hovered image
+          viewer_1.scene.removeAllMeasurements();
+          viewer_1.cur_loaded_image = null;
+          if (isCompareMode) {
+            viewerMode = "3d";
+            if (isCompareMode && compareType == "potree") {
+              viewer_2.scene.removeAllMeasurements();
+            }
+            viewer_2.cur_loaded_image = null;
+            if (compareType == "forge") {
+              setForgeControls("orbit");
+            } else {
+              if (event.detail.viewer == "viewer_1") {
+                viewer_2.scene.orientedImages[0].release();
+              } else {
+                viewer_1.scene.orientedImages[0].release();
+              }
+              viewer_2.scene.removeAllClipVolumes(); // To remove hovered image
+            }
+            viewer_1.fitToScreen();
+            if (!isMouseOnV1) {
+              if (compareType == "potree") {
+                viewer_2.fitToScreen();
+              } else {
+                viewer_2.navigation.setRequestFitToView(true);
+              }
+            }
+            pointCloudView(false);
+          } else if (event.detail.viewer == "viewer_1") {
+            viewer_1.fitToScreen();
+            pointCloudView(false);
+            viewerMode = "3d";
+          }
+        });
+
+        let zoomHandler_1 = (e) => {
+          let fov_delta = e.wheelDelta < 0 ? -5 : 5;
+          let fov = viewer_1.getFOV() + fov_delta;
+          if (fov > 10 && fov < 100) {
+            viewer_1.setFOV(fov);
+          }
+          isCompareMode && syncViewers();
+        };
+
+        let zoomHandler_2 = (e) => {
+          let fov_delta = e.wheelDelta < 0 ? -5 : 5;
+          let fov = viewer_2.getFOV() + fov_delta;
+          if (fov > 10 && fov < 100) {
+            viewer_2.setFOV(fov);
+          }
+          isCompareMode && syncViewers();
+        };
+
+        document.addEventListener("panoLoad", (event) => {
+          console.log("panoLoad ", event.detail.viewer, event.detail.image);
+          viewerMode = "panorama";
+          viewer_1.renderArea.addEventListener("mousewheel", zoomHandler_1);
+          viewer_1.scene.removeAllMeasurements();
+          if (isCompareMode && compareType == "potree") {
+            viewer_2.renderArea.addEventListener("mousewheel", zoomHandler_2);
+            viewer_2.scene.removeAllMeasurements();
+          }
+          if (event.detail.viewer == "viewer_1") {
+            viewer_1.cur_loaded_image = event.detail.image.file
+              .split("/")
+              .pop();
+          } else {
+            viewer_2.cur_loaded_image = event.detail.image.file
+              .split("/")
+              .pop();
+          }
+          if (isCompareMode) {
+            if (compareType == "forge") {
+              setForgeControls("panorama");
+            } else {
+              maintainContext(event.detail.viewer, event.detail.image);
+            }
+          }
+          pointCloudView(true);
+
+          if (viewer_1.isFloorMap) {
+            toggleFloorMap(viewer_1, true);
+          }
+
+          if (isCompareMode && compareType == "potree" && viewer_2.isFloorMap) {
+            toggleFloorMap(viewer_2, true);
+          }
+
+          setTimeout(() => {
+            if (tagToAddOnImageLoad != null) {
+              console.log("Adding Tag");
+              console.log(tagToAddOnImageLoad["info"]);
+              addTag(
+                tagToAddOnImageLoad["info"],
+                tagToAddOnImageLoad["viewer"]
+              );
+              tagToAddOnImageLoad = null;
+            }
+          }, 100);
+        });
+
+        document.addEventListener("panoUnload", (event) => {
+          console.log("panoUnload ", event.detail.viewer);
+          viewer_1.cur_loaded_image = null;
+          viewer_1.scene.removeAllMeasurements();
+          viewer_1.renderArea.removeEventListener("mousewheel", zoomHandler_1);
+          if (isCompareMode) {
+            viewer_2.cur_loaded_image = null;
+            if (isCompareMode && compareType == "potree") {
+              viewer_2.renderArea.removeEventListener(
+                "mousewheel",
+                zoomHandler_2
+              );
+              viewer_2.scene.removeAllMeasurements();
+            }
+            viewerMode = "3d";
+            if (compareType == "forge") {
+              setForgeControls("orbit");
+            } else {
+              if (event.detail.viewer == "viewer_1") {
+                viewer_2.scene.images360[0].unfocus();
+              } else {
+                viewer_1.scene.images360[0].unfocus();
+              }
+            }
+            viewer_1.fitToScreen();
+            if (!isMouseOnV1) {
+              if (compareType == "potree") {
+                viewer_2.fitToScreen();
+              } else {
+                viewer_2.navigation.setRequestFitToView(true);
+              }
+            }
+            pointCloudView(false);
+
+            if (viewer_1.isFloorMap) {
+              toggleFloorMap(viewer_1, false);
+            }
+
+            if (compareType == "potree" && viewer_2.isFloorMap) {
+              toggleFloorMap(viewer_2, false);
+            }
+          } else if (event.detail.viewer == "viewer_1") {
+            viewer_1.fitToScreen();
+            pointCloudView(false);
+            if (viewer_1.isFloorMap) {
+              toggleFloorMap(viewer_1, false);
+            }
+            viewerMode = "3d";
+          }
+        });
+
+        // Keyboard Shortcuts
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            // Exit in viewer 2 is already handled in contex maintanance
+            if (viewerMode == "image") {
+              viewer_1.controls.elExit.click();
+            }
+            // else if (viewerMode == 'panorama') {
+            //     viewer_1.scene.images360[0].unfocus();
+            // }
+          } else if (event.key === "ArrowUp") {
+            // up arrow
+            if (viewerMode == "image") {
+              viewer_1.controls.elUp.click();
+              if (isCompareMode && compareType == "potree") {
+                viewer_2.controls.elUp.click();
+              }
+            } else if (viewerMode == "panorama") {
+              if (event.ctrlKey) {
+                setPitch(viewer_1, 0.5);
+                if (isCompareMode && compareType == "potree") {
+                  setPitch(viewer_2, 0.5);
+                }
+              } else {
+                nextPanoImage(viewer_1);
+              }
+            }
+          } else if (event.key === "ArrowDown") {
+            // down arrow
+            if (viewerMode == "image") {
+              viewer_1.controls.elDown.click();
+              if (isCompareMode && compareType == "potree") {
+                viewer_2.controls.elDown.click();
+              }
+            } else if (viewerMode == "panorama") {
+              if (event.ctrlKey) {
+                setPitch(viewer_1, -0.5);
+                if (isCompareMode && compareType == "potree") {
+                  setPitch(viewer_2, -0.5);
+                }
+              }
+            }
+          } else if (event.key === "ArrowLeft") {
+            // left arrow
+            if (viewerMode == "image") {
+              viewer_1.controls.elLeft.click();
+              if (isCompareMode && compareType == "potree") {
+                viewer_2.controls.elLeft.click();
+              }
+            } else if (viewerMode == "panorama") {
+              setYaw(viewer_1, 0.5);
+              if (isCompareMode && compareType == "potree") {
+                setYaw(viewer_2, 0.5);
+              }
+            }
+          } else if (event.key === "ArrowRight") {
+            // right arrow
+            if (viewerMode == "image") {
+              viewer_1.controls.elRight.click();
+              if (isCompareMode && compareType == "potree") {
+                viewer_2.controls.elRight.click();
+              }
+            } else if (viewerMode == "panorama") {
+              setYaw(viewer_1, -0.5);
+              if (isCompareMode && compareType == "potree") {
+                setYaw(viewer_2, -0.5);
+              }
+            }
+          }
+        });
+
+        // document.addEventListener('mousedown', event => {
+        // 	sendSyncEvents = true;
+        // });
+        // document.addEventListener('mouseup', event => {
+        // 	sendSyncEvents = false;
+        // });
+
+        document.addEventListener("camerachange", (event) => {
+          syncPotreeEvent = true;
+        });
+      }
+
+      function pointCloudView(cond) {
+        viewer_1.setEDLEnabled(cond);
+        if (cond) {
+          viewer_1.setEDLOpacity(0);
+        } else {
+          viewer_1.setEDLOpacity(1);
+        }
+        if (isCompareMode && compareType == "potree") {
+          viewer_2.setEDLEnabled(cond);
+          if (cond) {
+            viewer_2.setEDLOpacity(0);
+          } else {
+            viewer_2.setEDLOpacity(1);
+          }
+        }
+      }
+
+      function maintainContext(viewerId, info) {
+        if (viewerMode == "image") {
+          let nearestImage = null;
+          let nearestImageDist = 10000;
+          if (viewerId == "viewer_1" && viewer_2.scene.orientedImages[0]) {
+            viewer_2.scene.orientedImages[0].images.forEach((image) => {
+              let curDist = image.position.distanceTo(info.position);
+              if (curDist < nearestImageDist) {
+                nearestImageDist = curDist;
+                nearestImage = image;
+              }
+            });
+            if (nearestImage) {
+              console.log(nearestImage.id);
+              viewer_2.scene.orientedImages[0].moveToImage(nearestImage, false);
+              viewer_2.cur_loaded_image = nearestImage.id;
+            }
+          } else if (viewer_1.scene.orientedImages[0]) {
+            viewer_1.scene.orientedImages[0].images.forEach((image) => {
+              let curDist = image.position.distanceTo(info.position);
+              if (curDist < nearestImageDist) {
+                nearestImageDist = curDist;
+                nearestImage = image;
+              }
+            });
+            if (nearestImage) {
+              console.log(nearestImage.id);
+              viewer_1.scene.orientedImages[0].moveToImage(nearestImage, false);
+              viewer_1.cur_loaded_image = nearestImage.id;
+            }
+          }
+        } else {
+          let nearestImage = null;
+          let nearestImageDist = 1000;
+          let inputPos = new THREE.Vector2().fromArray([
+            info.position[0],
+            info.position[1],
+          ]);
+          if (viewerId == "viewer_1") {
+            if (viewer_2.scene.images360[0]) {
+              viewer_2.scene.images360[0].images.forEach((pano) => {
+                let curPos = new THREE.Vector2().fromArray([
+                  pano.position[0],
+                  pano.position[1],
+                ]);
+                let curDist = curPos.distanceTo(inputPos);
+                if (curDist < nearestImageDist) {
+                  nearestImageDist = curDist;
+                  nearestImage = pano;
+                }
+              });
+              if (nearestImage) {
+                console.log(nearestImage.file);
+                viewer_2.scene.images360[0].focus(nearestImage, false);
+                viewer_2.cur_loaded_image = nearestImage.file.split("/").pop();
+              }
+            }
+          } else if (viewer_1.scene.images360[0]) {
+            viewer_1.scene.images360[0].images.forEach((pano) => {
+              let curPos = new THREE.Vector2().fromArray([
+                pano.position[0],
+                pano.position[1],
+              ]);
+              let curDist = curPos.distanceTo(inputPos);
+              if (curDist < nearestImageDist) {
+                nearestImageDist = curDist;
+                nearestImage = pano;
+              }
+            });
+            if (nearestImage) {
+              console.log(nearestImage.file);
+              viewer_1.scene.images360[0].focus(nearestImage, false);
+              viewer_1.cur_loaded_image = nearestImage.file.split("/").pop();
+            }
+          }
+        }
+      }
+
+      function getNearestImage(viewer, camInfo, mode) {
+        let nearestImage = null;
+        let nearestImageDist = 10000;
+        if (mode == "image") {
+          viewer.scene.orientedImages[0].images.forEach((image) => {
+            let curDist = image.position.distanceTo(camInfo.position);
+            if (curDist < nearestImageDist) {
+              nearestImageDist = curDist;
+              nearestImage = image;
+            }
+          });
+          if (nearestImage) {
+            console.log(nearestImage.id);
+            viewer.scene.orientedImages[0].moveToImage(nearestImage);
+          }
+        } else {
+          let inputPos = new THREE.Vector2().fromArray([
+            camInfo.position.x,
+            camInfo.position.y,
+          ]);
+          viewer.scene.images360[0].images.forEach((pano) => {
+            let curPos = new THREE.Vector2().fromArray([
+              pano.position[0],
+              pano.position[1],
+            ]);
+            let curDist = curPos.distanceTo(inputPos);
+            if (curDist < nearestImageDist) {
+              nearestImageDist = curDist;
+              nearestImage = pano;
+            }
+          });
+          if (nearestImage) {
+            console.log(nearestImage.file);
+            viewer.scene.images360[0].focus(nearestImage, true, camInfo);
+          }
+        }
+      }
+
+      function syncViewers() {
+        if (isCompareMode) {
+          if (viewerMode == "3d") {
+            if (isMouseOnV1) {
+              if (compareType == "potree") {
+                let v1Pos = viewer_1.scene.view.position.toArray();
+                viewer_2.scene.view.position.set(v1Pos[0], v1Pos[1], v1Pos[2]);
+                viewer_2.scene.view.lookAt(viewer_1.scene.view.getPivot());
+                viewer_2.setFOV(viewer_1.fov);
+              } else if (syncPotreeEvent) {
+                // Conditional syncing only for forge
+                viewer_2.navigation.setPosition(
+                  viewer_1.scene.view.position.clone()
+                );
+                viewer_2.navigation.setTarget(viewer_1.scene.view.getPivot());
+                viewer_2.navigation.setVerticalFov(viewer_1.fov, false);
+              }
+            } else {
+              if (compareType == "potree") {
+                let v2Pos = viewer_2.scene.view.position.toArray();
+                viewer_1.scene.view.position.set(v2Pos[0], v2Pos[1], v2Pos[2]);
+                viewer_1.scene.view.lookAt(viewer_2.scene.view.getPivot());
+                viewer_1.setFOV(viewer_2.fov);
+              } else if (syncForgeEvent) {
+                viewer_2.navigation.setCameraUpVector(
+                  new THREE.Vector3().fromArray([0, 0, 1])
+                );
+                const state = viewer_2.getState({ viewport: true }).viewport;
+                viewer_1.scene.view.position.set(
+                  state.eye[0],
+                  state.eye[1],
+                  state.eye[2]
+                );
+                viewer_1.scene.view.lookAt(
+                  new THREE.Vector3().fromArray(state.target)
+                );
+                viewer_1.setFOV(state.fieldOfView);
+                // viewer_2.navigation.setWorldUpVector(new THREE.Vector3().fromArray([0, 0, 1]), false);
+              }
+            }
+          } else if (viewerMode == "panorama" && compareType == "potree") {
+            if (isMouseOnV1) {
+              viewer_2.scene.view.pitch = viewer_1.scene.view.pitch;
+              viewer_2.scene.view.yaw = viewer_1.scene.view.yaw;
+              viewer_2.fov = viewer_1.fov;
+            } else {
+              viewer_1.scene.view.pitch = viewer_2.scene.view.pitch;
+              viewer_1.scene.view.yaw = viewer_2.scene.view.yaw;
+              viewer_1.fov = viewer_2.fov;
+            }
+          } else if (compareType == "forge" && syncPotreeEvent) {
+            // Do nothing if secondary viewer is potree
+            viewer_2.navigation.setPosition(
+              viewer_1.scene.view.position.clone()
+            );
+            viewer_2.navigation.setTarget(viewer_1.scene.view.getPivot());
+            viewer_2.navigation.setVerticalFov(viewer_1.fov, false);
+          }
+          syncPotreeEvent = false;
+          syncForgeEvent = false;
+        }
+      }
+
+      async function loadPointCloud(
+        viewer,
+        projectID,
+        tilesetID,
+        secondary = false,
+        inCamera
+      ) {
+        let pcMatrix = new THREE.Matrix4().set(
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        );
+        let pcOffset = [0, 0, 0];
+        viewer["globalOffset"] = pcOffset;
+        const tm_json_raw = await fetch(
+          `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/pointcloud/tm.json`
+        );
+        if (tm_json_raw.status == 200) {
+          const tm_json = JSON.parse(await tm_json_raw.text());
+          if (tm_json.tm) {
+            pcMatrix = new THREE.Matrix4().fromArray(tm_json.tm).transpose();
+          }
+          if (tm_json.offset) {
+            pcOffset = tm_json.offset;
+          }
+          viewer["globalOffset"] = pcOffset;
+          if (inCamera) {
+            let pos = inCamera.position;
+            let tar = inCamera.target;
+            let offset = viewer.globalOffset;
+            inCamera.position = new THREE.Vector3(
+              pos[0] - offset[0],
+              pos[1] - offset[1],
+              pos[2] - offset[2]
+            );
+            inCamera.target = new THREE.Vector3(
+              tar[0] - offset[0],
+              tar[1] - offset[1],
+              tar[2] - offset[2]
+            );
+          }
+          console.log("PC TM Loaded", tm_json);
+        }
+
+        Potree.loadPointCloud(
+          `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/pointcloud/cloud.json`,
+          projectID + "_" + tilesetID,
+          (e) => {
+            let scene = viewer.scene;
+            let pointcloud = e.pointcloud;
+
+            let material = pointcloud.material;
+            material.size = 1;
+            material.pointSizeType = Potree.PointSizeType.FIXED;
+            material.shape = Potree.PointShape.SQUARE;
+            pointcloud.applyMatrix(pcMatrix);
+            const assetPosition = pointcloud.position.clone();
+            pointcloud.position.set(
+              assetPosition.x - pcOffset[0],
+              assetPosition.y - pcOffset[1],
+              assetPosition.z - pcOffset[2]
+            );
+            scene.addPointCloud(pointcloud);
+            viewer.fitToScreen();
+            console.log("Point Cloud Loaded");
+
+            let startWithImage = true;
+
+            if (inputTag && !inputTag.image) {
+              let startWithImage = false;
+              viewerMode = "3d";
+              flyToContext(inputTag.camera);
+            }
+
+            if (isExterior) {
+              console.log("Exterior Project");
+              loadDroneImages(
+                viewer,
+                projectID,
+                tilesetID,
+                { tm: pcMatrix, offset: pcOffset },
+                secondary,
+                inCamera,
+                startWithImage
+              );
+              if (viewer.canvasId == "viewer_1") {
+                document.getElementById("cameras_off_1").style.display =
+                  "inline-block";
+              } else {
+                document.getElementById("cameras_off_2").style.display =
+                  "inline-block";
+              }
+            } else {
+              console.log("Interior Project");
+              // loadPanoImages(viewer, projectID, tilesetID, {tm: pcMatrix, offset1: [232067.2387, 1936749.6433, 563], offset: pcOffset}, secondary);
+              loadPanoImages(
+                viewer,
+                projectID,
+                tilesetID,
+                { tm: new THREE.Matrix4(), offset: pcOffset },
+                secondary,
+                inCamera,
+                startWithImage
+              );
+            }
+          }
+        );
+      }
+
+      function loadDroneImages(
+        viewer,
+        projectID,
+        tilesetID,
+        tmatrix,
+        secondary,
+        inCamera,
+        showImage
+      ) {
+        const imageParamsPath = `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/images.json`;
+        const imagesPath = `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/images`;
+        Potree.OrientedImageLoader.load(
+          imageParamsPath,
+          imagesPath,
+          viewer,
+          tmatrix
+        ).then((images) => {
+          viewer.scene.addOrientedImages(images);
+          // setTimeout(() => {
+          if (showImage) {
+            if (secondary && viewerMode == "image") {
+              maintainContext(
+                "viewer_1",
+                viewer_1.scene.orientedImages[0].focused
+              );
+              pointCloudView(true);
+            } else if (!secondary) {
+              // setTimeout(() => {
+              if (inputTag) {
+                flyToTagContext(inputTag);
+              } else if (inCamera) {
+                if (Array.isArray(inCamera.position)) {
+                  inCamera.position = new THREE.Vector3().fromArray(
+                    inCamera.position
+                  );
+                  inCamera.target = new THREE.Vector3().fromArray(
+                    inCamera.target
+                  );
+                }
+                getNearestImage(viewer, inCamera, "image");
+              } else {
+                viewer.scene.orientedImages[0].moveToImage(
+                  viewer.scene.orientedImages[0].images[0]
+                );
+              }
+              // }, 2000);
+            }
+          }
+          // }, 2000);
+        });
+      }
+
+      function loadPanoImages(
+        viewer,
+        projectID,
+        tilesetID,
+        tmatrix,
+        secondary,
+        inCamera,
+        showImage
+      ) {
+        viewerMode = "panorama";
+        const imageParamsPath = `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/images.json`;
+        // const imageParamsPath = `http://localhost:1234/indoor_images_15_17_48_66.json`;
+        // const imagesPath = `https://localhost:1234`
+        const imagesPath = `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/images`;
+        Potree.Images360Loader.load(
+          imageParamsPath,
+          imagesPath,
+          viewer,
+          tmatrix
+        ).then((images) => {
+          viewer.scene.add360Images(images);
+          if (showImage) {
+            if (secondary && viewerMode == "panorama") {
+              maintainContext(
+                "viewer_1",
+                viewer_1.scene.images360[0].focusedImage
+              );
+              // pointCloudView(true);viewer_2.navigation.setCameraUpVector(new THREE.Vector3().fromArray([0, 0, 1]));
+            } else if (!secondary) {
+              if (inputTag) {
+                flyToTagContext(inputTag);
+              } else if (inCamera) {
+                getNearestImage(viewer, inCamera, "panorama");
+              } else {
+                viewer.scene.images360[0].focus(
+                  viewer.scene.images360[0].images[0]
+                );
+              }
+            }
+          }
+        });
+      }
+
+      function compareMode(type) {
+        let pid = inProjectID;
+        let tid = inTilesetID2;
+        if (isCompareMode) {
+          closeCompareMode();
+        }
+        compareType = type;
+        document.getElementById("viewer_1").style.width = "50%";
+        document.getElementById("viewer_2").style.display = "block";
+
+        isCompareMode = true;
+        if (type == "potree") {
+          initSecondPotree(pid, tid);
+        } else {
+          initForge(pid, inTilesetID, "viewer_2");
+          document.getElementById("fpContainer_2").style.display = "none";
+        }
+
+        if (viewer_1.isFloorMap) {
+          updateFPSize(viewer_1.floorMap);
+        }
+      }
+
+      function closeCompareMode() {
+        isCompareMode = false;
+        document.getElementById("viewer_1").style.width = "100%";
+        document.getElementById("viewer_2").style.display = "none";
+        if (compareType == "forge") {
+          viewer_2.finish();
+          viewer_2 = null;
+          Autodesk.Viewing.shutdown();
+        } else {
+          removeAssets(viewer_2);
+          viewer_2 = null;
+        }
+
+        if (viewer_1.isFloorMap) {
+          updateFPSize(viewer_1.floorMap);
+        }
+      }
+
+      function initSecondPotree(pid_2, tid_2) {
+        if (tid_2 == "") {
+          document.getElementById("no_bim_2").style.display = "block";
+          isCompareMode = false;
+        } else {
+          window.viewer_2 = new Potree.Viewer(
+            document.getElementById("viewer_2")
+          );
+          viewer_2.setFOV(60);
+          viewer_2.setPointBudget(1 * 1000 * 1000);
+          document.title = "";
+          viewer_2.setEDLEnabled(false);
+          viewer_2.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+          viewer_2.setDescription(``);
+          viewer_2.loadSettingsFromURL();
+          viewer_2.canvasId = "viewer_2";
+          viewer_2.customtype = "potree";
+
+          viewer_2.loadGUI(async () => {
+            viewer_2.setLanguage("en");
+            console.log("Viewer_2 Loaded");
+            isCompareMode = true;
+            viewer_2.fpContainerId = "fpContainer_2";
+            viewer_2.fpCanvasId = "floormap_2";
+            loadSnapshot(viewer_2, pid_2, tid_2, true);
+            viewer_2.tileset = tid_2;
+            toggleVisibility("action_buttons_2", true);
+          });
+        }
+      }
+
+      function removeAssets(viewer) {
+        viewer.scene.scenePointCloud.remove(viewer.scene.pointclouds[0]);
+        viewer.scene.pointclouds = [];
+        if (viewer.scene.orientedImages.length) {
+          viewer.scene.orientedImages[0].release();
+          viewer.scene.orientedImages[0].images.forEach((image) => {
+            viewer.scene.scene.children[0].remove(image.mesh);
+            viewer.scene.scene.children[0].remove(image.line);
+          });
+          viewer.scene.scene.remove(viewer.scene.scene.children[0]);
+          viewer.scene.removeOrientedImages(viewer.scene.orientedImages[0]);
+        }
+
+        if (viewer.scene.images360.length) {
+          viewer.scene.images360[0].unfocus(false);
+          viewer.scene.images360[0].images.forEach((image) => {
+            viewer.scene.scene.children[0].remove(image.mesh);
+          });
+          viewer.scene.scene.children[0].remove(
+            viewer.scene.images360[0].sphere
+          );
+          viewer.scene.scene.remove(viewer.scene.scene.children[0]);
+          viewer.scene.remove360Images(viewer.scene.images360[0]);
+        }
+        if (viewer.isFloorMap) {
+          removeFloorMap(viewer);
+        }
+      }
+
+      function loadSnapshot(
+        viewer,
+        pid,
+        tid,
+        secondary = false,
+        inCamera = null
+      ) {
+        removeAssets(viewer);
+        loadPointCloud(viewer, pid, tid, secondary, inCamera);
+        isFloorMap &&
+          loadFloormap(
+            viewer.fpContainerId,
+            viewer.fpCanvasId,
+            viewer,
+            pid,
+            tid
+          );
+      }
+
+      function getAutodeskToken() {
+        return new Promise((resolve, reject) => {
+          $.ajax({
+            url: "https://developer.api.autodesk.com/authentication/v1/authenticate",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: {
+              client_id: "aJRMrmok5UAbsdsXjckJmSBmoNnYKLzM",
+              // client_id: 'iXWYm3FVGMhLYLssAQAwdMGMq5HsAwNb',
+              client_secret: "mSqemcEE53l4THBJ",
+              // client_Secret: 'hPvkyDrWToKUG8c3',
+              grant_type: "client_credentials",
+              scope: "data:read",
+            },
+            success: (rawData) => {
+              resolve(rawData);
+            },
+            error: (e) => {
+              resolve(null);
+            },
+          });
+        });
+      }
+
+      function pointerToRaycasterForge(domElement, camera, pointer) {
+        const pointerVector = new THREE.Vector3();
+        const pointerDir = new THREE.Vector3();
+        const ray = new THREE.Raycaster();
+        const rect = domElement.getBoundingClientRect();
+        const x = ((pointer.clientX - rect.left) / rect.width) * 2 - 1;
+        const y = -((pointer.clientY - rect.top) / rect.height) * 2 + 1;
+        if (camera.isPerspective) {
+          pointerVector.set(x, y, 0.5);
+          pointerVector.unproject(camera);
+          ray.set(
+            camera.position,
+            pointerVector.sub(camera.position).normalize()
+          );
+        } else {
+          pointerVector.set(x, y, -1);
+          pointerVector.unproject(camera);
+          pointerDir.set(0, 0, -1);
+          ray.set(
+            pointerVector,
+            pointerDir.transformDirection(camera.matrixWorld)
+          );
+        }
+        return ray;
+      }
+
+      function getAllDbIds(viewer) {
+        const { instanceTree } = viewer.model.getData();
+        const { dbIdToIndex } = instanceTree.nodeAccess;
+        return Object.keys(dbIdToIndex).map((dbId) => {
+          return parseInt(dbId);
+        });
+      }
+
+      function initForge(pid, tid, divId, inCamera = null) {
+        var options = {
+          env: "Local",
+          api: "derivativeV2", // for models uploaded to EMEA change this option to 'derivativeV2_EU'
+          getAccessToken: async function (onTokenReady) {
+            const res = await getAutodeskToken();
+            onTokenReady(res.access_token, res.expires_in);
+          },
+        };
+        Autodesk.Viewing.Initializer(options, function () {
+          var htmlDiv = document.getElementById(divId);
+
+          const config3d = {
+            extensions: ["Autodesk.ADN.Viewing.Extension.Color"],
+          };
+
+          if (
+            inProjectID == "161" ||
+            inProjectID == "165" ||
+            inProjectID == "166"
+          ) {
+            config3d["navToolsConfig"] = {
+              dollyScrollScale: 0.005,
+            };
+          } else if (inProjectID == "235") {
+            config3d["navToolsConfig"] = {
+              dollyScrollScale: 0.001,
+            };
+          }
+
+          let viewer = new Autodesk.Viewing.GuiViewer3D(htmlDiv, config3d);
+          window[divId] = viewer;
+          var startedCode = viewer.start();
+          viewer.canvasId = divId;
+          if (startedCode > 0) {
+            console.error("Failed to create a Viewer: WebGL not supported.");
+            return;
+          }
+          console.log("Initialization complete, loading a model next...");
+          // isCompareMode = true;
+
+          viewer.navigation.setWorldUpVector(
+            new THREE.Vector3().fromArray([0, 0, 1]),
+            false
+          );
+
+          viewer.navigation.setReverseZoomDirection(true);
+
+          localStorage.setItem(
+            "Autodesk.Viewing.Private.GuiViewer3D.SavedSettings.viewCube",
+            false
+          );
+          localStorage.setItem(
+            "Autodesk.Viewing.Private.GuiViewer3D.SavedSettings.groundShadow",
+            false
+          );
+
+          viewer.addEventListener(
+            Autodesk.Viewing.CAMERA_CHANGE_EVENT,
+            (event) => {
+              syncForgeEvent = true;
+            }
+          );
+
+          viewer.container.addEventListener("click", function (ev) {
+            const result = viewer.clientToWorld(ev.clientX, ev.clientY);
+            if (result) {
+              console.log("Click Point", result.point);
+            }
+          });
+
+          viewer.addEventListener(
+            Autodesk.Viewing.SELECTION_CHANGED_EVENT,
+            (event) => {
+              var currSelection = viewer.getSelection();
+              console.log("Selection: ");
+
+              if (currSelection.length && bimProgressData[viewer.canvasId]) {
+                let guid =
+                  bimProgressData[viewer.canvasId]["dbtoguid"][
+                    currSelection[0]
+                  ];
+                let progress =
+                  bimProgressData[viewer.canvasId]["progress"][guid];
+
+                console.log(
+                  "dbid: ",
+                  currSelection[0],
+                  "guid: ",
+                  guid,
+                  "progress: ",
+                  progress
+                );
+
+                // let card_container_id = divId == 'viewer_1' ? 'bim_details_card_container_1' : 'bim_details_card_container_2'
+                // let card_id = divId == 'viewer_1' ? 'bim_details_card_1' : 'bim_details_card_2'
+                // let card_container = document.getElementById(card_container_id);
+                // let card = document.getElementById(card_id);
+                // let card_details = '<table>'
+                // card_details += `<tr> <td>    </td> <td>    </td> </tr>`
+                // card_details += `<tr> <td> GUID </td> <td> ${guid} </td> </tr>`
+                // card_details += `<tr> <td> Progress </td> <td> ${progress} </td> </tr>`
+
+                // card_details += '</table>'
+                // card.innerHTML = card_details;
+                // card_container.style.display = 'block';
+                let bim_element_details = { guid: guid, progress: progress };
+                window.top.postMessage(
+                  {
+                    type: "bim-click",
+                    data: JSON.stringify(bim_element_details),
+                  },
+                  "*"
+                );
+                console.log("Sending ", bim_element_details);
+
+                // const pointer = event.pointers ? event.pointers[0] : event;
+                // const rayCaster = pointerToRaycasterForge(viewer.canvas, viewer.navigation.getCamera(), pointer);
+                // const forgeClickObject = viewer.model.rayIntersect(rayCaster, true, this.getAllDbIds(viewer));
+                // console.log('Click point')
+                // console.log(forgeClickObject)
+
+                // const result = viewer.clientToWorld(event.clientX, event.clientY);
+                // if (result) {
+                // 	console.log(result.point);
+                // }
+              } else {
+                window.top.postMessage(
+                  { type: "bim-click", data: JSON.stringify({}) },
+                  "*"
+                );
+                // closeBimDetailsCard(divId);
+              }
+            }
+          );
+
+          viewer.customtype = "forge";
+          loadBIM(viewer, pid, tid, inCamera);
+        });
+      }
+
+      function closeBimDetailsCard(viewer_id) {
+        let container_id =
+          viewer_id == "viewer_1"
+            ? "bim_details_card_container_1"
+            : "bim_details_card_container_2";
+        let card = document.getElementById(container_id);
+        card.style.display = "none";
+        viewer_id == "viewer_1"
+          ? viewer_1.clearSelection()
+          : viewer_2.clearSelection();
+      }
+
+      async function loadBIM(viewer, pid, tid, inCamera) {
+        // let path = `http://localhost:1234/0.svf`;
+        let path = `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${pid}/forge/model/0.svf`;
+        const modelOptions = { applyScaling: "m" };
+        modelOptions.globalOffset = { x: 0, y: 0, z: 0 };
+        let globalOff = [0, 0, 0];
+        viewer["globalOffset"] = globalOff;
+        viewer["properties_child"] = ["GLOBALID", "NAME"];
+        viewer["properties_head"] = ["IFC"];
+
+        const tm_json_raw = await fetch(
+          `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${pid}/forge/tm_forge.json`
+        );
+        if (tm_json_raw.status == 200) {
+          const tm_json = JSON.parse(await tm_json_raw.text());
+          if (tm_json.tm) {
+            modelOptions.placementTransform = new THREE.Matrix4()
+              .fromArray(tm_json.tm)
+              .transpose();
+            // modelOptions.placementTransform = new THREE.Matrix4().fromArray([0.216,1.022,-0.007,367033.477,-1.022,0.216,-0.001,2053135.281,-0.000,0.007,1.045,-57.5,0.000,0.000,0.000,1.000]).transpose()
+            console.log("BIM TM Loaded");
+          }
+
+          if (tm_json.offset) {
+            globalOff = tm_json.offset;
+            modelOptions.globalOffset = {
+              x: globalOff[0],
+              y: globalOff[1],
+              z: globalOff[2],
+            };
+          }
+
+          if (tm_json.properties_child) {
+            viewer["properties_child"] = tm_json.properties_child;
+          }
+
+          if (tm_json.properties_head) {
+            viewer["properties_head"] = tm_json.properties_head;
+          }
+
+          viewer["globalOffset"] = globalOff;
+          if (inCamera) {
+            let pos = inCamera.position;
+            let tar = inCamera.target;
+            let offset = viewer.globalOffset;
+            inCamera.position = new THREE.Vector3(
+              pos[0] - offset[0],
+              pos[1] - offset[1],
+              pos[2] - offset[2]
+            );
+            inCamera.target = new THREE.Vector3(
+              tar[0] - offset[0],
+              tar[1] - offset[1],
+              tar[2] - offset[2]
+            );
+          }
+        }
+
+        viewer.loadModel(
+          path,
+          modelOptions,
+          async (model) => {
+            if (inCamera) {
+              // Only Happens in 'bim' only mode
+              viewer.navigation.setPosition(inCamera.position);
+              viewer.navigation.setTarget(inCamera.target);
+            } else if (viewer.canvasId == "viewer_2") {
+              if (viewerMode != "3d") {
+                function checkFlag() {
+                  if (!viewer.getExtension("Autodesk.BimWalk")) {
+                    console.log("Loading BimWalk Extension ...");
+                    window.setTimeout(checkFlag, 1000);
+                  } else {
+                    setForgeControls(viewerMode);
+                  }
+                }
+                checkFlag();
+              }
+              viewer_2.navigation.setPosition(
+                viewer_1.scene.view.position.clone()
+              );
+              viewer_2.navigation.setTarget(viewer_1.scene.view.getPivot());
+              viewer_2.navigation.setVerticalFov(viewer_1.fov, false);
+            }
+
+            // Set Pivot Point
+
+            let fuzzy_box = viewer.model.getFuzzyBox();
+            let fuzzy_min = fuzzy_box["min"];
+            let fuzzy_max = fuzzy_box["max"];
+            let fuzzy_center = new THREE.Vector3(
+              (fuzzy_min["x"] + fuzzy_max["x"]) / 2,
+              (fuzzy_min["y"] + fuzzy_max["y"]) / 2,
+              (fuzzy_min["z"] + fuzzy_max["z"]) / 2
+            );
+            viewer.navigation.setPivotPoint(fuzzy_center);
+
+            // Generate GUID - DBID Mapping and progress view/
+
+            loadProgressView(viewer, pid, tid);
+          },
+          (e) => {
+            if (viewer.canvasId == "viewer_2") {
+              document.getElementById("no_bim_2").style.display = "block";
+            } else {
+              document.getElementById("no_bim_1").style.display = "block";
+            }
+          }
+        );
+      }
+
+      function loop(timestamp) {
+        syncViewers();
+        requestAnimationFrame(loop);
+        if (viewer_1.isFloorMap) {
+          updateUserLocation(viewer_1);
+        }
+        if (isCompareMode && compareType == "potree" && viewer_2.isFloorMap) {
+          updateUserLocation(viewer_2);
+        }
+      }
+
+      function setForgeControls(type) {
+        if (type == "orbit") {
+          viewer_2.navigation.setIsLocked(false);
+          if (viewer_2.getExtension("Autodesk.BimWalk")) {
+            viewer_2.getExtension("Autodesk.BimWalk").deactivate();
+          }
+        } else {
+          viewer_2.navigation.setLockSettings({
+            orbit: false,
+            pan: false,
+            zoom: false,
+            roll: false,
+            fov: true,
+          });
+          viewer_2.navigation.setIsLocked(true);
+
+          if (viewer_2.getExtension("Autodesk.BimWalk")) {
+            viewer_2.getExtension("Autodesk.BimWalk").activate();
+          }
+        }
+      }
+
+      function setPitch(viewer, delta) {
+        const startPitch = { p: viewer.scene.view.pitch };
+        const endPitch = { p: startPitch.p + delta };
+        let tween = new TWEEN.Tween(startPitch).to(endPitch, 500);
+        tween.easing(TWEEN.Easing.Quartic.Out);
+        tween.onUpdate(() => {
+          viewer.scene.view.pitch = startPitch.p;
+          syncPotreeEvent = true;
+        });
+        tween.onComplete(() => {
+          viewer.scene.view.pitch = endPitch.p;
+          syncPotreeEvent = true;
+        });
+        tween.start();
+      }
+
+      function setYaw(viewer, delta) {
+        const startYaw = { y: viewer.scene.view.yaw };
+        const endYaw = { y: startYaw.y + delta };
+        let tween = new TWEEN.Tween(startYaw).to(endYaw, 500);
+        tween.easing(TWEEN.Easing.Quartic.Out);
+        tween.onUpdate(() => {
+          viewer.scene.view.yaw = startYaw.y;
+          syncPotreeEvent = true;
+        });
+        tween.onComplete(() => {
+          viewer.scene.view.yaw = endYaw.y;
+          syncPotreeEvent = true;
+        });
+        tween.start();
+      }
+
+      function nextPanoImage(viewer) {
+        let cameraInstance = viewer.scene.cameraP;
+        const camDir = new THREE.Vector3();
+        cameraInstance.getWorldDirection(camDir);
+        camDir.normalize();
+        const camPos = cameraInstance.position;
+        const weightages = { angle: 0.5, distance: 0.5 };
+        let totalSum = 10000;
+        let curSum;
+        let selectedPanoImageId;
+        let cameraViewProjectionMatrix;
+        let imgPos;
+        let dist;
+        let angle;
+        let frustum;
+        const camToImgDir = new THREE.Vector3();
+        const maxDist = 10;
+        const panoImgs = viewer.scene.images360[0].images;
+
+        for (let i = 0; i < panoImgs.length; i++) {
+          if (panoImgs[i].file == viewer.scene.images360[0].focusedImage.file) {
+            continue;
+          }
+          imgPos = new THREE.Vector3().fromArray(panoImgs[i].position);
+          frustum = new THREE.Frustum();
+          cameraViewProjectionMatrix = new THREE.Matrix4();
+          cameraInstance.updateMatrixWorld(); // make sure the camera matrix is updated
+          // cameraInstance.matrixWorldInverse.getInverse(cameraInstance.matrixWorld);
+          cameraInstance.matrixWorldInverse
+            .copy(cameraInstance.matrixWorld)
+            .invert();
+          cameraViewProjectionMatrix.multiplyMatrices(
+            cameraInstance.projectionMatrix,
+            cameraInstance.matrixWorldInverse
+          );
+          frustum.setFromMatrix(cameraViewProjectionMatrix);
+
+          // // if (frustum.containsPoint(imgPos)) {
+          dist = imgPos.distanceTo(camPos);
+          if (dist < maxDist) {
+            camToImgDir.subVectors(imgPos, camPos).normalize();
+            angle = Math.abs(camToImgDir.angleTo(camDir));
+            // tslint:disable-next-line: no-string-literal
+            curSum =
+              weightages["angle"] * angle + weightages["distance"] * dist;
+            if (curSum < totalSum) {
+              selectedPanoImageId = i;
+              totalSum = curSum;
+            }
+          }
+          // // }
+
+          // dist = imgPos.distanceTo(camPos);
+          // if (dist < maxDist) {
+          //     camToImgDir.subVectors(imgPos, camPos).normalize();
+          //     angle = Math.abs(camToImgDir.angleTo(camDir));
+          //     // tslint:disable-next-line: no-string-literal
+          //     // curSum = (weightages['angle'] * angle) + (weightages['distance'] * dist);
+          //     if (angle < totalSum) {
+          //         selectedPanoImageId = i;
+          //         totalSum = angle;
+          //     }
+          // }
+        }
+        if (selectedPanoImageId != undefined) {
+          viewer.scene.images360[0].focus(panoImgs[selectedPanoImageId]);
+        } else {
+          console.warn("No Nearest 360 Images");
+        }
+      }
+
+      function loadFloormap(fpContainerId, fpCanvasId, viewer, pid, tid) {
+        let base_image = new Image();
+        base_image.src = `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${pid}/floormap/floormap.png`;
+        // return new Promise((resolve, reject) => {
+        let fpCanvas = document.getElementById(fpCanvasId);
+        let fpContainer = document.getElementById(fpContainerId);
+        let viewerDiv = document.getElementById(viewer.canvasId);
+        fpContainer.style.display = viewerMode == "3d" ? "none" : "block";
+
+        viewer.floorMap = {};
+        viewer.floorMap.canvas = fpCanvas;
+        viewer.floorMap.container = fpContainer;
+        viewer.floorMap.div = viewerDiv;
+        viewer.floorMap.coverage = mode.includes("compare") ? 0.25 : 0.15;
+
+        base_image.onload = async () => {
+          viewer.floorMap.image = base_image;
+          updateFPSize(viewer.floorMap);
+
+          let fpMarix = new THREE.Matrix4().set(
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1
+          );
+          let fpOffset = [0, 0, 0];
+          const tm_json_raw = await fetch(
+            `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${pid}/floormap/tm.json`
+          );
+          if (tm_json_raw.status == 200) {
+            const tm_json = JSON.parse(await tm_json_raw.text());
+            if (tm_json.tm) {
+              fpMarix = new THREE.Matrix4().fromArray(tm_json.tm).transpose();
+              console.log("FP TM Loaded");
+            }
+            viewer.floorMap.tm = fpMarix;
+
+            if (tm_json.offset) {
+              fpOffset = tm_json.offset;
+            }
+            viewer.floorMap.offset = fpOffset;
+          }
+
+          const indoor_images_raw = await fetch(
+            `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${pid}/snapshots/${tid}/images.json`
+          );
+          // const indoor_images_raw = await fetch(`http://localhost:1234/indoor_images_15_17_48_66.json`);
+          if (indoor_images_raw.status == 200) {
+            const indoor_images = JSON.parse(await indoor_images_raw.text());
+            console.log("Indoor Images Loaded");
+            loadIcons(
+              indoor_images,
+              fpMarix,
+              base_image,
+              fpCanvas,
+              fpContainer,
+              viewer.floorMap,
+              viewer.canvasId
+            );
+            addUserLocation(
+              "https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/fp_user.png",
+              viewer
+            ); // Update Required
+            viewer.floorMap.images = indoor_images;
+          }
+          viewer.isFloorMap = true;
+        };
+        fpContainer.addEventListener("click", (e) => {
+          const clickData = JSON.parse(e.target.getAttribute("data"));
+          if (clickData.id == "viewer_1") {
+            viewer_1.scene.images360[0].images.forEach((pano) => {
+              if (pano.file.split("/").pop() == clickData.name) {
+                viewer_1.scene.images360[0].focus(pano);
+              }
+            });
+          } else if (clickData.id == "viewer_2") {
+            viewer_2.scene.images360[0].images.forEach((pano) => {
+              if (pano.file.split("/").pop() == clickData.name) {
+                viewer_2.scene.images360[0].focus(pano);
+              }
+            });
+          }
+          console.log(clickData.name);
+        });
+      }
+
+      function toggleFloorMap(viewer, cond) {
+        viewer.floorMap.container.style.display = cond ? "block" : "none";
+      }
+
+      function loadIcons(
+        inData,
+        tm,
+        fpImage,
+        fpCanvas,
+        fpContainer,
+        fpStoreData,
+        id
+      ) {
+        let iconSize = 0.01;
+        fpStoreData.icons = [];
+        Object.keys(inData).forEach((imageName) => {
+          const cur_image_pos = inData[imageName].position;
+          const pixelCoords = worldToimage(
+            [cur_image_pos[0], cur_image_pos[1], cur_image_pos[2]],
+            tm
+          );
+          const screenCoords = imageToScreen(pixelCoords, fpImage, fpCanvas);
+          let icon = document.createElement("span");
+          icon.setAttribute("class", "panoIcon");
+          icon.setAttribute(
+            "data",
+            JSON.stringify({ name: imageName, id: id })
+          );
+          icon.style.width = fpCanvas.width * iconSize + "px";
+          icon.style.height = fpCanvas.width * iconSize + "px";
+          icon.style.top = screenCoords[1] - 5 + "px";
+          icon.style.left = screenCoords[0] - 5 + "px";
+          fpContainer.appendChild(icon);
+          fpStoreData.icons.push(icon);
+        });
+      }
+
+      function addUserLocation(path, viewer) {
+        let base_image = new Image();
+        base_image.src = path;
+        return new Promise((resolve, reject) => {
+          base_image.onload = () => {
+            base_image.setAttribute("class", "userIcon");
+            viewer.floorMap.userIcon = base_image;
+            viewer.floorMap.container.appendChild(base_image);
+          };
+        });
+      }
+
+      function calAngle(cx, cy, ex, ey) {
+        var dy = ey - cy;
+        var dx = ex - cx;
+        var theta = Math.atan2(dy, dx); // range (-PI, PI]
+        theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+        if (theta < 0) theta = 360 + theta; // range [0, 360)
+        return theta - 90 + 180;
+        // return 90 - theta;
+      }
+
+      function updateUserLocation(viewer) {
+        let curView = viewer.scene.view;
+        const position = curView.position.toArray();
+        position[0] += viewer.floorMap.offset[0];
+        position[1] += viewer.floorMap.offset[1];
+        position[2] += viewer.floorMap.offset[2];
+        const pixelCoordsOffset = worldToimage(position, viewer.floorMap.tm);
+        const screenCoords = imageToScreen(
+          pixelCoordsOffset,
+          viewer.floorMap.image,
+          viewer.floorMap.canvas
+        );
+        viewer.floorMap.userIcon.style.left =
+          screenCoords[0] - viewer.floorMap.userIcon.width / 2 + 5 + "px";
+        viewer.floorMap.userIcon.style.top =
+          screenCoords[1] - viewer.floorMap.userIcon.height / 2 + 5 + "px";
+        const camTarget = new THREE.Vector3()
+          .addVectors(curView.position, curView.direction.multiplyScalar(1))
+          .toArray();
+        camTarget[0] += viewer.floorMap.offset[0];
+        camTarget[1] += viewer.floorMap.offset[1];
+        camTarget[2] += viewer.floorMap.offset[2];
+        const camTargetPixel = worldToimage(camTarget, viewer.floorMap.tm);
+        const angle = calAngle(
+          pixelCoordsOffset[0],
+          pixelCoordsOffset[1],
+          camTargetPixel[0],
+          camTargetPixel[1]
+        );
+        viewer.floorMap.userIcon.style.transform = "rotate(" + angle + "deg)";
+      }
+
+      function worldToimage(coords, intm) {
+        const a = new THREE.Vector4(coords[0], coords[1], coords[2], 1);
+        a.applyMatrix4(intm);
+        return [Math.ceil(a.x), Math.ceil(a.y)];
+      }
+
+      function imageToScreen(pix, image, canvas) {
+        const pxx = (pix[0] * canvas.width) / image.naturalWidth;
+        const pyy = (pix[1] * canvas.height) / image.naturalHeight;
+        return [pxx, pyy];
+      }
+
+      function resizeFP(image, fpCanvas, v, coverage) {
+        // let coverage = 0.5;
+        // if (isCompareMode) {
+        // coverage = 0.25;
+        // }
+        // let coverage =
+        if (image.naturalWidth > image.naturalHeight) {
+          fpCanvas.width = v.clientWidth * coverage;
+          fpCanvas.height =
+            fpCanvas.width * (image.naturalHeight / image.naturalWidth);
+        } else {
+          fpCanvas.height = coverage * v.clientWidth;
+          fpCanvas.width =
+            fpCanvas.height * (image.naturalWidth / image.naturalHeight);
+        }
+      }
+
+      function updateFPSize(fpData) {
+        resizeFP(fpData.image, fpData.canvas, fpData.div, fpData.coverage);
+        let context = fpData.canvas.getContext("2d");
+        context.drawImage(
+          fpData.image,
+          0,
+          0,
+          fpData.canvas.width,
+          fpData.canvas.height
+        );
+        if (fpData.icons) {
+          updateFpIcons(fpData);
+        }
+      }
+
+      function updateFpIcons(fpInfo) {
+        let iconSize = 0.02;
+        Object.keys(fpInfo.images).forEach((imageName, index) => {
+          const cur_image_pos = fpInfo.images[imageName].position;
+          const pixelCoords = worldToimage(cur_image_pos, fpInfo.tm);
+          const screenCoords = imageToScreen(
+            pixelCoords,
+            fpInfo.image,
+            fpInfo.canvas
+          );
+          let icon = fpInfo.icons[index];
+          icon.style.width = fpInfo.canvas.width * iconSize + "px";
+          icon.style.height = fpInfo.canvas.width * iconSize + "px";
+          icon.style.top = screenCoords[1] - 5 + "px";
+          icon.style.left = screenCoords[0] - 5 + "px";
+        });
+      }
+
+      function removeFloorMap(viewer) {
+        viewer.floorMap.icons.forEach((icon) => {
+          viewer.floorMap.container.removeChild(icon);
+        });
+        viewer.floorMap.icons = [];
+        viewer.floorMap.container.removeChild(viewer.floorMap.userIcon);
+        viewer.floorMap.userIcon = null;
+        viewer.floorMap.images = null;
+        let context = viewer.floorMap.canvas.getContext("2d");
+        context.clearRect(
+          0,
+          0,
+          viewer.floorMap.canvas.width,
+          viewer.floorMap.canvas.height
+        );
+        viewer.floorMap = {};
+        viewer.isFloorMap = false;
+      }
+
+      async function addMeasure(type, id) {
+        let viewer;
+        if (id == "viewer_1") {
+          viewer = viewer_1;
+          document.getElementById("measure_tool_1").style.display = "block";
+          document
+            .getElementById("measure_top_1")
+            .setAttribute("measure_tool", true);
+        } else {
+          viewer = viewer_2;
+          document.getElementById("measure_tool_2").style.display = "block";
+          document
+            .getElementById("measure_top_2")
+            .setAttribute("measure_tool", true);
+        }
+        if (type == "point") {
+          console.log("Adding Point Measure");
+
+          if (viewerMode == "3d") {
+            let measurement = viewer.measuringTool.startInsertion({
+              showDistances: false,
+              showAngles: false,
+              showCoordinates: true,
+              showArea: false,
+              closed: true,
+              maxMarkers: 1,
+              name: "Point",
+            });
+          } else {
+            let clickHandler = (event) => {
+              const raycaster = new THREE.Raycaster();
+              let pickedObject = undefined;
+
+              const rect = viewer.renderArea.getBoundingClientRect();
+              let pos = {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+              };
+
+              // const pos = this.getCanvasRelativePosition(event);
+              let pickPosition = { x: 0, y: 0 };
+              pickPosition.x = (pos.x / viewer.renderArea.clientWidth) * 2 - 1;
+              pickPosition.y =
+                (pos.y / viewer.renderArea.clientHeight) * -2 + 1; // note we flip Y
+
+              raycaster.setFromCamera(pickPosition, viewer.scene.cameraP);
+              let objs =
+                viewerMode == "image"
+                  ? viewer.scene.scene.children
+                  : [viewer.scene.scene.children[0].children[0]];
+              const intersectedObjects = raycaster.intersectObjects(objs, true);
+              if (intersectedObjects.length) {
+                let click_point =
+                  viewerMode == "image"
+                    ? intersectedObjects[2].point
+                    : intersectedObjects[0].point;
+                let measure = new Potree.Measure();
+                measure.showDistances = false;
+                measure.showCoordinates = true;
+                measure.maxMarkers = 1;
+                measure.type = "Point";
+                measure.name = "Point";
+                measure.addMarker(click_point);
+                viewer.scene.addMeasurement(measure);
+              }
+              viewer.renderArea.removeEventListener("click", clickHandler);
+            };
+            setTimeout(() => {
+              viewer.renderArea.addEventListener("click", clickHandler);
+            }, 1);
+          }
+        } else if (type == "distance") {
+          console.log("Adding Distance Measure");
+          let measurement = viewer.measuringTool.startInsertion({
+            showDistances: true,
+            showArea: false,
+            closed: false,
+            name: "Distance",
+          });
+        } else if (type == "area") {
+          console.log("Adding Area Measure");
+          let measurement = viewer.measuringTool.startInsertion({
+            showDistances: true,
+            showArea: true,
+            closed: true,
+            name: "Area",
+          });
+        } else if (type == "height") {
+          console.log("Adding Area Measure");
+          let measurement = viewer.measuringTool.startInsertion({
+            showDistances: false,
+            showHeight: true,
+            showArea: false,
+            closed: false,
+            maxMarkers: 2,
+            name: "Height",
+          });
+        } else if (type == "clear") {
+          viewer.scene.removeAllMeasurements();
+        } else if (type == "save") {
+          let date_time = new Date();
+          let screenShotPath = `${mainProjectID}/structures/${inProjectID}/snapshots/${
+            viewer.tileset
+          }/${date_time.getTime()}.png`;
+          let latest_measure = viewer.scene.measurements.slice(-1)[0];
+          let save_obj = {
+            type: latest_measure.name,
+            points: latest_measure.points.map((point) =>
+              point.position.toArray()
+            ),
+            image: viewer.cur_loaded_image,
+            tileset: viewer.tileset,
+            camera: locate(viewer),
+            screenShot: `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${screenShotPath}`,
+          };
+          console.log("Saving Annotation: ", save_obj);
+          window.top.postMessage(
+            { type: "save-tag", data: JSON.stringify(save_obj) },
+            "*"
+          );
+          takeScreenshot(screenShotPath, viewer);
+        }
+      }
+
+      function toggleVisibility(id, cond) {
+        let div = document.getElementById(id);
+        if (cond) {
+          div.style.display = "block";
+        } else {
+          div.style.display = "none";
+        }
+        updateIconsDisplay();
+      }
+
+      function toggleOrientedImages(id, cond) {
+        if (id == "viewer_1") {
+          viewer_1.scene.orientedImages[0].visible = cond;
+          document.getElementById("cameras_on_1").style.display = cond
+            ? "none"
+            : "inline-block";
+          document.getElementById("cameras_off_1").style.display = cond
+            ? "inline-block"
+            : "none";
+        } else {
+          viewer_2.scene.orientedImages[0].visible = cond;
+          document.getElementById("cameras_on_2").style.display = cond
+            ? "none"
+            : "inline-block";
+          document.getElementById("cameras_off_2").style.display = cond
+            ? "inline-block"
+            : "none";
+        }
+      }
+
+      function actionIconClick(icon) {
+        const inData = JSON.parse(event.target.getAttribute("data"));
+        if (inData) {
+          // parent.postMessage(`${inData.type} button clicked`, "*");
+          if (inData.type == "3d") {
+            if (inData.id == "viewer_1") {
+              viewer_1.controls.elExit.click();
+            } else {
+              viewer_2.controls.elExit.click();
+            }
+          } else if (inData.type == "cameras") {
+            if (inData.id == "viewer_1") {
+              inData.condition == "on"
+                ? toggleOrientedImages("viewer_1", true)
+                : toggleOrientedImages("viewer_1", false);
+            } else {
+              inData.condition == "on"
+                ? toggleOrientedImages("viewer_2", true)
+                : toggleOrientedImages("viewer_2", false);
+            }
+          } else if (inData.type == "compare") {
+            let cam = locate(viewer_1);
+            console.log("3D COMPARE");
+            window.location.href =
+              "https://internal.constructn.ai/tour1?project=" +
+              mainProjectID +
+              "&structure=" +
+              structure_id +
+              "&snapshot1=" +
+              inTilesetID +
+              "&snapshot2=" +
+              inTilesetID2 +
+              "&token=" +
+              token +
+              "&mode=compare_3d" +
+              "&camera=" +
+              JSON.stringify(cam);
+          } else if (inData.type == "bim-compare") {
+            let cam = locate(viewer_1);
+            console.log("BIM COMPARE");
+            window.location.href =
+              "https://internal.constructn.ai/tour1?project=" +
+              mainProjectID +
+              "&structure=" +
+              structure_id +
+              "&snapshot1=" +
+              inTilesetID +
+              "&snapshot2=" +
+              inTilesetID2 +
+              "&mode=compare_bim" +
+              "&camera=" +
+              JSON.stringify(cam) +
+              "&token=" +
+              token;
+          } else if (inData.type == "fp_fullscreen") {
+            if (inData.id == "viewer_1") {
+              if (event.target.id == "fp_fullscreen_1") {
+                document.getElementById("fp_fullscreen_1").style.display =
+                  "none";
+                document.getElementById("fp_minimise_1").style.display =
+                  "block";
+                viewer_1.floorMap.coverage = 0.5;
+                updateFPSize(viewer_1.floorMap);
+              } else {
+                document.getElementById("fp_fullscreen_1").style.display =
+                  "block";
+                document.getElementById("fp_minimise_1").style.display = "none";
+                viewer_1.floorMap.coverage = isCompareMode ? 0.25 : 0.15;
+                updateFPSize(viewer_1.floorMap);
+              }
+            } else if (inData.id == "viewer_2") {
+              if (event.target.id == "fp_fullscreen_2") {
+                document.getElementById("fp_fullscreen_2").style.display =
+                  "none";
+                document.getElementById("fp_minimise_2").style.display =
+                  "block";
+                viewer_2.floorMap.coverage = 0.5;
+                updateFPSize(viewer_2.floorMap);
+              } else {
+                document.getElementById("fp_fullscreen_2").style.display =
+                  "block";
+                document.getElementById("fp_minimise_2").style.display = "none";
+                viewer_2.floorMap.coverage = isCompareMode ? 0.25 : 0.15;
+                updateFPSize(viewer_2.floorMap);
+              }
+            }
+          } else if (inData.type == "compare-close") {
+            let cam = locate(viewer_1);
+            window.location.href =
+              "https://internal.constructn.ai/tour1?project=" +
+              mainProjectID +
+              "&structure=" +
+              structure_id +
+              "&snapshot1=" +
+              inTilesetID +
+              "&snapshot2=" +
+              inTilesetID2 +
+              "&mode=3d" +
+              "&camera=" +
+              JSON.stringify(cam) +
+              "&token=" +
+              token;
+          } else if (inData.type == "bim_legend") {
+            let visible = false;
+            if (event.target.style.opacity == 0.5) {
+              visible = true;
+              event.target.style.opacity = 1;
+            } else {
+              event.target.style.opacity = 0.5;
+            }
+
+            if (inData.id == "viewer_1") {
+              bimFilters(viewer_1, "progress", event.target.id, visible);
+            } else {
+              bimFilters(viewer_2, "progress", event.target.id, visible);
+            }
+          } else if (inData.type == "bim_card_close") {
+            // if (inData.id == 'viewer_1') {
+            // 	closeBimDetailsCard('viewer_1');
+            // } else if (inData.id == 'viewer_2') {
+            // 	closeBimDetailsCard('viewer_2');
+            // }
+          } else if (inData.type == "measure") {
+            if (inData.id == "viewer_1") {
+              if (event.target.getAttribute("measure_tool") == null) {
+                event.target.setAttribute("measure_tool", false);
+              }
+              if (event.target.getAttribute("measure_tool") == "true") {
+                document.getElementById("measure_tool_1").style.display =
+                  "none";
+                event.target.setAttribute("measure_tool", false);
+              } else {
+                document.getElementById("measure_tool_1").style.display =
+                  "block";
+                event.target.setAttribute("measure_tool", true);
+              }
+            } else {
+              if (event.target.getAttribute("measure_tool") == "true") {
+                document.getElementById("measure_tool_2").style.display =
+                  "none";
+                event.target.setAttribute("measure_tool", false);
+              } else {
+                document.getElementById("measure_tool_1").style.display =
+                  "block";
+                event.target.setAttribute("measure_tool", true);
+              }
+            }
+          } else {
+            // event.stopPropagation()
+            addMeasure(inData.type, inData.id);
+          }
+        }
+      }
+
+      function getAllLeafComponents(viewer, callback) {
+        var cbCount = 0; // count pending callbacks
+        var components = []; // store the results
+        var tree; // the instance tree
+
+        function getLeafComponentsRec(parent) {
+          cbCount++;
+          if (tree.getChildCount(parent) != 0) {
+            tree.enumNodeChildren(
+              parent,
+              function (children) {
+                getLeafComponentsRec(children);
+              },
+              false
+            );
+          } else {
+            components.push(parent);
+          }
+          if (--cbCount == 0) callback(components);
+        }
+        viewer.getObjectTree(function (objectTree) {
+          tree = objectTree;
+          var allLeafComponents = getLeafComponentsRec(tree.getRootId());
+        });
+      }
+
+      function getRecursiveGUID(viewer, dbIds) {
+        return new Promise((resolve, reject) => {
+          let guidMapping = {};
+          let guidTodbid = {};
+          let parentMapping = {};
+          let guidToName = {};
+          let dbIdToGuid = {};
+          let property_childs = viewer["properties_child"];
+          let property_head = viewer["properties_head"][0];
+
+          function getGUID(ids) {
+            let dbIdsProcessed = [];
+            viewer.model.getBulkProperties(ids, property_childs, (data) => {
+              data.map((elementDetails) => {
+                let id = elementDetails.properties.filter(
+                  (details) =>
+                    details.displayCategory == property_head &&
+                    details.displayName == property_childs[0]
+                )[0]["displayValue"];
+                let name = elementDetails.properties.filter(
+                  (details) =>
+                    details.displayCategory == property_head &&
+                    details.displayName == property_childs[1]
+                )[0]["displayValue"];
+                if (id) {
+                  guidMapping[elementDetails.dbId] = id;
+                  dbIdsProcessed.push(elementDetails.dbId);
+                  guidToName[id] = name;
+                } else {
+                  console.log("No IFC id for ", elementDetails);
+                }
+              });
+              // console.log('Got ' + dbIdsProcessed.length + ' guids ....')
+              // Get GUID from parent for remaining Ids
+              let remainingDbIds = ids.filter(
+                (lid) => !dbIdsProcessed.includes(lid)
+              );
+              if (remainingDbIds.length) {
+                // console.log('Getting Parents for ' + remainingDbIds.length + ' dbids ....')
+                viewer.model.getBulkProperties(
+                  remainingDbIds,
+                  ["parent"],
+                  (data) => {
+                    let parentsForRemaining = data.map((elementDetails) => {
+                      parentMapping[elementDetails.dbId] =
+                        elementDetails.properties[0].displayValue;
+                      return elementDetails.properties[0].displayValue;
+                    });
+                    getGUID(parentsForRemaining);
+                  }
+                );
+              } else {
+                function getGIdFromParent(id) {
+                  if (guidMapping[parentMapping[id]]) {
+                    return guidMapping[parentMapping[id]];
+                  } else {
+                    return getGIdFromParent(parentMapping[id]);
+                  }
+                }
+
+                dbIds.map((dbid) => {
+                  let gid = guidMapping[dbid];
+                  if (gid) {
+                    if (guidTodbid[gid]) {
+                      guidTodbid[gid].push(dbid);
+                    } else {
+                      guidTodbid[gid] = [dbid];
+                    }
+                    dbIdToGuid[dbid] = gid;
+                  } else {
+                    gid = getGIdFromParent(dbid);
+                    if (guidTodbid[gid]) {
+                      guidTodbid[gid].push(dbid);
+                    } else {
+                      guidTodbid[gid] = [dbid];
+                    }
+                    dbIdToGuid[dbid] = gid;
+                  }
+                });
+
+                // console.log(guidTodbid)
+                console.log(guidToName);
+                bimProgressData[viewer.canvasId] = resolve({
+                  guidMapping: guidTodbid,
+                  dbIdToGuid: dbIdToGuid,
+                });
+              }
+            });
+          }
+
+          console.log("Got " + dbIds.length + " input ids");
+          getGUID(dbIds);
+        });
+      }
+
+      function getguidTodbidMapping(viewer) {
+        return new Promise((resolve, reject) => {
+          getAllLeafComponents(viewer, async (leafIds) => {
+            let guidDetails = await getRecursiveGUID(viewer, leafIds);
+            resolve(guidDetails);
+          });
+        });
+      }
+
+      async function bimProgressView(viewer) {
+        if (
+          inProjectID == "161" ||
+          inProjectID == "165" ||
+          inProjectID == "166"
+        ) {
+          viewer.hideAll();
+          viewer.show(bimProgressData[viewer.canvasId]["green"]);
+          viewer.show(bimProgressData[viewer.canvasId]["blue"]);
+        }
+
+        viewer.setColorMaterial(
+          bimProgressData[viewer.canvasId]["red"],
+          [1, 0, 0, 0.5],
+          "red"
+        );
+        viewer.setColorMaterial(
+          bimProgressData[viewer.canvasId]["green"],
+          [0.5, 0.88, 0.22, 0.5],
+          "green"
+        );
+        viewer.setColorMaterial(
+          bimProgressData[viewer.canvasId]["blue"],
+          [0.95, 0.6, 0.22, 0.5],
+          "blue"
+        );
+
+        // viewer.setColorMaterial(bimProgressData[viewer.canvasId]['red'], 0xFF0000, 'red')
+        // viewer.setColorMaterial(bimProgressData[viewer.canvasId]['green'], 0x71E03A, 'green')
+        // viewer.setColorMaterial(bimProgressData[viewer.canvasId]['blue'], 0xF39B3A, 'blue')
+
+        // viewer.setLightPreset(4)
+        viewer.setQualityLevel(false, false);
+      }
+
+      function bimFilters(viewer, filterType, filterName, visible) {
+        if (filterType == "progress") {
+          if (filterName == "bim_not_started") {
+            visible
+              ? viewer.show(bimProgressData[viewer.canvasId]["red"])
+              : viewer.hide(bimProgressData[viewer.canvasId]["red"]);
+          } else if (filterName == "bim_complete") {
+            visible
+              ? viewer.show(bimProgressData[viewer.canvasId]["green"])
+              : viewer.hide(bimProgressData[viewer.canvasId]["green"]);
+          } else if (filterName == "bim_in_progress") {
+            visible
+              ? viewer.show(bimProgressData[viewer.canvasId]["blue"])
+              : viewer.hide(bimProgressData[viewer.canvasId]["blue"]);
+          }
+        }
+      }
+
+      function bimDefaultView(viewer) {
+        if (
+          inProjectID == "161" ||
+          inProjectID == "165" ||
+          inProjectID == "166"
+        ) {
+          viewer.showAll();
+        }
+        var instanceTree = viewer.model.getData().instanceTree;
+
+        var allDbIdsStr = Object.keys(instanceTree.nodeAccess.dbIdToIndex);
+
+        let dbIds = allDbIdsStr.map(function (id) {
+          return parseInt(id);
+        });
+        viewer.restoreColorMaterial(dbIds);
+        // viewer.setLightPreset(1)
+        viewer.setQualityLevel(true, true);
+      }
+
+      function addProgressButton(viewer) {
+        let group = new Autodesk.Viewing.UI.ControlGroup("BimProgress");
+        viewer.toolbar.addControl(group);
+
+        // Add a new button to the toolbar group
+        let button = new Autodesk.Viewing.UI.Button("progress");
+        // instead of using bootstrap classes e.g.
+        // button.icon.classList.add("fas", "fa-arrows-alt");
+        // you can do this
+        let iconPath =
+          "https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/progress.png";
+        button.icon.style = `background-image: url(${iconPath}); background-size: 24px 24px;`;
+
+        button.setToolTip("Progress View");
+
+        button.onClick = function (e) {
+          toggleBimProgressView(viewer);
+
+          // button.icon.classList.add('adsk-viewing-viewer', 'dark-theme', 'adsk-button.active', 'adsk-button')
+          // button.icon.classList.add("fas", "fa-arrows-alt");
+        };
+
+        group.addControl(button);
+
+        toggleBimProgressView(viewer);
+
+        let elems = document.querySelectorAll("[id=bim_not_started]");
+
+        if (viewer.canvasId == "viewer_1") {
+          elems[0].click();
+        } else {
+          elems[1].click();
+        }
+      }
+
+      function toggleBimProgressView(viewer) {
+        console.log("Go to Progress View");
+        bimProgressMode ? bimDefaultView(viewer) : bimProgressView(viewer);
+        if (viewer.canvasId == "viewer_1") {
+          bimProgressMode
+            ? (document.getElementById("bim_legend_1").style.display = "none")
+            : (document.getElementById("bim_legend_1").style.display = "block");
+        } else {
+          bimProgressMode
+            ? (document.getElementById("bim_legend_2").style.display = "none")
+            : (document.getElementById("bim_legend_2").style.display = "block");
+        }
+        bimProgressMode = !bimProgressMode;
+      }
+
+      async function loadProgressView(viewer, projectID, tilesetID) {
+        const progress_data_raw = await fetch(
+          `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/bim_progress.json`
+        );
+        if (progress_data_raw.status == 200) {
+          let guidDetails = await getguidTodbidMapping(viewer);
+          let guidMapping = guidDetails.guidMapping;
+          let guids = Object.keys(guidDetails.guidMapping);
+
+          bimProgressData[viewer.canvasId] = {
+            mapping: guidDetails.guidMapping,
+            dbtoguid: guidDetails.dbIdToGuid,
+            guids: guids,
+          };
+
+          console.log("GUID - DBID mapping done");
+          const progress_data = JSON.parse(await progress_data_raw.text());
+          console.log("BIM progress json loaded");
+
+          bimProgressData[viewer.canvasId]["progress"] = progress_data;
+
+          // let guids = bimProgressData[viewer.canvasId]['guids']
+          // let guidMapping = bimProgressData[viewer.canvasId]['mapping']
+
+          let redArr = guids.filter((key) => progress_data[key] == 0);
+          let greenArr = guids.filter((key) => progress_data[key] == 100);
+          let blueArr = guids.filter(
+            (key) => !redArr.includes(key) && !greenArr.includes(key)
+          );
+          let redDbArr = [];
+          let greenDbArr = [];
+          let blueDbArr = [];
+          if (
+            inProjectID != "161" &&
+            inProjectID != "165" &&
+            inProjectID != "166"
+          ) {
+            redArr.map((id) => (redDbArr = redDbArr.concat(guidMapping[id])));
+          }
+          blueArr.map((id) => (blueDbArr = blueDbArr.concat(guidMapping[id])));
+          greenArr.map(
+            (id) => (greenDbArr = greenDbArr.concat(guidMapping[id]))
+          );
+
+          bimProgressData[viewer.canvasId]["red"] = redDbArr;
+          bimProgressData[viewer.canvasId]["green"] = greenDbArr;
+          bimProgressData[viewer.canvasId]["blue"] = blueDbArr;
+
+          console.log("###############################");
+          console.log(redArr);
+
+          addProgressButton(viewer);
+
+          loadProgressWalk(viewer, projectID, tilesetID);
+        }
+      }
+
+      function select_group_bim(in_guids, viewer, mode, in_field) {
+        let dbArr = [];
+        let guidMapping = bimProgressData[viewer.canvasId]["mapping"];
+        in_guids.map((id) => (dbArr = dbArr.concat(guidMapping[id])));
+
+        if (mode == "material") {
+          bimDefaultView(viewer);
+          viewer.setColorMaterial(dbArr, in_field, "temp_mat");
+        } else if (mode == "visibility") {
+          in_field ? viewer.show(dbArr) : viewer.hide(dbArr);
+        }
+      }
+
+      function remove_group_bim(viewer, mode) {
+        if (mode == "material") {
+          bimDefaultView(viewer);
+        } else if (mode == "visibility") {
+          viewer.showAll();
+        }
+      }
+
+      function locate(viewer) {
+        let camObject;
+        if (viewer.customtype == "potree") {
+          let pos = viewer.scene.view.position.toArray();
+          let tar = viewer.scene.view.getPivot().toArray();
+          let offset = viewer.globalOffset;
+          camObject = {
+            position: [
+              pos[0] + offset[0],
+              pos[1] + offset[1],
+              pos[2] + offset[2],
+            ],
+            target: [
+              tar[0] + offset[0],
+              tar[1] + offset[1],
+              tar[2] + offset[2],
+            ],
+            pitch: viewer.scene.view.pitch,
+            yaw: viewer.scene.view.yaw,
+          };
+        } else if (viewer.customtype == "forge") {
+          const state = viewer.getState({ viewport: true }).viewport;
+          let offset = viewer.globalOffset;
+          camObject = {
+            position: [
+              state.eye[0] + offset[0],
+              state.eye[1] + offset[1],
+              state.eye[2] + offset[2],
+            ],
+            target: [
+              state.target[0] + offset[0],
+              state.target[1] + offset[1],
+              state.target[2] + offset[2],
+            ],
+          };
+        }
+        console.log("Camera : ", camObject);
+        return camObject;
+      }
+
+      function getInverse(org_mat) {
+        var m4 = new THREE.Matrix4();
+        m4.getInverse(org_mat);
+        m4.transpose();
+        return m4.toArray();
+      }
+
+      function flyToContext(info) {
+        let viewer = viewer_1;
+        let offset = viewer.globalOffset;
+        let inCamera_withOffset = {
+          position: new THREE.Vector3().fromArray([
+            info.position[0] - offset[0],
+            info.position[1] - offset[1],
+            info.position[2] - offset[2],
+          ]),
+          target: new THREE.Vector3().fromArray([
+            info.target[0] - offset[0],
+            info.target[1] - offset[1],
+            info.target[2] - offset[2],
+          ]),
+          pitch: info.pitch ? info.pitch : null,
+          yaw: info.yaw ? info.yaw : null,
+        };
+        let inCamera = {
+          position: new THREE.Vector3().fromArray([
+            info.position[0],
+            info.position[1],
+            info.position[2],
+          ]),
+          target: new THREE.Vector3().fromArray([
+            info.target[0],
+            info.target[1],
+            info.target[2],
+          ]),
+        };
+        if (viewerMode == "image") {
+          getNearestImage(viewer, inCamera_withOffset, "image");
+        } else if (viewerMode == "panorama") {
+          getNearestImage(viewer, inCamera_withOffset, "panorama");
+        } else {
+          if (viewer.customtype == "potree") {
+            viewer.scene.view.setView(
+              inCamera_withOffset.position,
+              inCamera_withOffset.target
+            );
+          } else {
+            viewer.navigation.setPosition(inCamera_withOffset.position);
+            viewer.navigation.setTarget(inCamera_withOffset.target);
+          }
+          if (isCompareMode) {
+            isMouseOnV1 = true;
+            syncViewers();
+          }
+        }
+      }
+
+      function flyToImage(viewer, imageName, inCamera) {
+        if (viewerMode == "panorama") {
+          viewer.scene.images360[0].images.forEach((image) => {
+            if (image.file.split("/").pop() == imageName) {
+              viewer.scene.images360[0].focus(image, true, inCamera);
+            }
+          });
+        } else {
+          viewer.scene.orientedImages[0].images.forEach((image) => {
+            if (image.id == imageName) {
+              viewer.scene.orientedImages[0].moveToImage(image);
+            }
+          });
+        }
+      }
+
+      function flyToTagContext(info) {
+        let offset = viewer_1.globalOffset;
+        let inCamera_withOffset = {
+          position: new THREE.Vector3().fromArray([
+            info.camera.position[0] - offset[0],
+            info.camera.position[1] - offset[1],
+            info.camera.position[2] - offset[2],
+          ]),
+          target: new THREE.Vector3().fromArray([
+            info.camera.target[0] - offset[0],
+            info.camera.target[1] - offset[1],
+            info.camera.target[2] - offset[2],
+          ]),
+          pitch: info.camera.pitch ? info.camera.pitch : null,
+          yaw: info.camera.yaw ? info.camera.yaw : null,
+        };
+
+        // if (info.image) {
+        // 	flyToImage_AddTag(viewer_1, info.image, inCamera_withOffset, info)
+        // 	if (isCompareMode) {
+        // 		flyToImage_AddTag(viewer_2, info.image, inCamera_withOffset, info)
+        // 	}
+        // } else {
+        // 	console.log('No Tag Support in 3d')
+        // }
+        if (info.image) {
+          if (viewer_1.tileset == info.tileset) {
+            isMouseOnV1 = true;
+
+            tagToAddOnImageLoad = {
+              info: info,
+              viewer: viewer_1,
+            };
+
+            flyToImage(viewer_1, info.image, inCamera_withOffset);
+            // addTag(info, viewer_1)
+            isMouseOnV1 = true;
+          } else if (isCompareMode && viewer_2.tileset == info.tileset) {
+            isMouseOnV1 = false;
+            // addTag(info, viewer_2)
+            tagToAddOnImageLoad = {
+              info: info,
+              viewer: viewer_2,
+            };
+            flyToImage(viewer_2, info.image, inCamera_withOffset);
+            isMouseOnV1 = false;
+          } else {
+            window.location.href =
+              "https://internal.constructn.ai/tour1?project=" +
+              mainProjectID +
+              "&structure=" +
+              structure_id +
+              "&snapshot1=" +
+              info.tileset +
+              "&snapshot2=" +
+              inTilesetID2 +
+              "&mode=" +
+              mode +
+              "&tag=" +
+              JSON.stringify(info) +
+              "&token=" +
+              token;
+          }
+        } else if (isExterior) {
+          console.log("Load 3d tags");
+          // viewer_1.controls.elExit.click();
+          if (viewer_1.cur_loaded_image) {
+            viewer_1.controls.elExit.click();
+          }
+          // if (isCompareMode) {
+          // 	viewer_2.scene.orientedImages[0].release()
+          // }
+
+          setTimeout(() => {
+            if (viewer_1.tileset == info.tileset) {
+              isMouseOnV1 = true;
+              flyToContext(info.camera);
+              addTag(info, viewer_1);
+              isMouseOnV1 = true;
+            } else if (isCompareMode && viewer_2.tileset == info.tileset) {
+              isMouseOnV1 = false;
+              flyToContext(info.camera);
+              addTag(info, viewer_2);
+              isMouseOnV1 = false;
+            } else {
+              window.location.href =
+                "https://internal.constructn.ai/tour1?project=" +
+                mainProjectID +
+                "&structure=" +
+                structure_id +
+                "&snapshot1=" +
+                info.tileset +
+                "&snapshot2=" +
+                inTilesetID2 +
+                "&mode=" +
+                mode +
+                "&tag=" +
+                JSON.stringify(info) +
+                "&token=" +
+                token;
+            }
+          }, 1000);
+        }
+
+        // if (viewerMode == 'image') {
+        // 	getNearestImage(viewer_1,inCamera_withOffset, 'image')
+        // } else if (viewerMode == 'panorama') {
+        // 	getNearestImage(viewer_1,inCamera_withOffset, 'panorama')
+        // } else {
+        // 	if (viewer_1.customtype == 'potree') {
+        // 		viewer.scene.view.setView(inCamera_withOffset.position, inCamera_withOffset.target)
+        // 	} else {
+        // 		viewer_1.navigation.setPosition(inCamera_withOffset.position);
+        // 		viewer_1.navigation.setTarget(inCamera_withOffset.target);
+        // 	}
+        // 	if (isCompareMode) {
+        // 		isMouseOnV1 = true
+        // 		syncViewers();
+        // 	}
+        // }
+      }
+
+      function addTag(inData, viewer) {
+        if (inData.type == "Point") {
+          let measure = new Potree.Measure();
+          measure.showDistances = false;
+          measure.showCoordinates = true;
+          measure.maxMarkers = 1;
+          measure.addMarker(new THREE.Vector3().fromArray(inData.points[0]));
+          viewer.scene.addMeasurement(measure);
+        } else if (inData.type == "Distance") {
+          let measure = new Potree.Measure();
+          measure.closed = false;
+          inData.points.forEach((point) => {
+            measure.addMarker(new THREE.Vector3().fromArray(point));
+          });
+          viewer.scene.addMeasurement(measure);
+        } else if (inData.type == "Area") {
+          let measure = new Potree.Measure();
+          measure.name = "Area";
+          measure.closed = true;
+          measure.showArea = true;
+          inData.points.forEach((point) => {
+            measure.addMarker(new THREE.Vector3().fromArray(point));
+          });
+          viewer.scene.addMeasurement(measure);
+        } else if (inData.type == "Height") {
+          let measure = new Potree.Measure();
+          measure.name = "Tree Height";
+          measure.closed = false;
+          measure.showDistances = false;
+          measure.showHeight = true;
+          inData.points.forEach((point) => {
+            measure.addMarker(new THREE.Vector3().fromArray(point));
+          });
+          viewer.scene.addMeasurement(measure);
+        }
+      }
+
+      requestAnimationFrame(loop);
+
+      var datesIdMapRight = {};
+      var datesIdMapLeft = {};
+      getDate("#datepickerLeft", datesIdMapLeft, 0, 1);
+      getDate("#datepickerRight", datesIdMapRight, 1, 2);
+
+      function getDate(dateObject, datesMap, defaultValue, snapshotNo) {
+        return new Promise((resolve, reject) => {
+          $.ajax({
+            url: `https://api.dev.constructn.ai/api/v1/snapshots?structure=${structure_id}`,
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            success: (rawData) => {
+              console.log(rawData);
+              if (rawData.result[defaultValue]) {
+                updateDateObject(
+                  rawData,
+                  dateObject,
+                  datesMap,
+                  defaultValue,
+                  snapshotNo
+                );
+              } else if (
+                defaultValue === 1 &&
+                rawData.records[defaultValue - 1]
+              ) {
+                updateDateObject(
+                  rawData,
+                  dateObject,
+                  datesMap,
+                  defaultValue - 1,
+                  snapshotNo
+                );
+              } else {
+                console.log("No records found for Snapshot " + defaultValue);
+              }
+            },
+            error: (e) => {
+              resolve(null);
+            },
+          });
+        });
+      }
+
+      function updateDateObject(
+        rawData,
+        dateObject,
+        datesMap,
+        defaultValue,
+        snapshotNo
+      ) {
+        rawData.result.forEach((record) => {
+          const date = new Date(record["date"]).toISOString().split("T")[0];
+          datesMap[date] = record._id;
+        });
+        console.log(window.location.host);
+        const snapshot = snapshotNo === 1 ? inTilesetID : inTilesetID2;
+        const defaultDate = getValue(datesMap, snapshot)
+          ? getValue(datesMap, snapshot)
+          : new Date(rawData.result[defaultValue]["date"])
+              .toISOString()
+              .split("T")[0];
+        $(dateObject)
+          .datepicker({
+            showOn: "button",
+            buttonImage:
+              "https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/calendar.svg",
+            buttonImageOnly: true,
+            buttonText: "Select date",
+            dateFormat: "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            beforeShowDay: function (date) {
+              var string = jQuery.datepicker.formatDate("yy-mm-dd", date);
+              return [Object.keys(datesMap).indexOf(string) > -1];
+            },
+            onSelect: function (dateText, inst) {
+              let cam = locate(viewer_1);
+              if (snapshotNo === 1) {
+                window.location.href =
+                  "https://internal.constructn.ai/tour1?project=" +
+                  mainProjectID +
+                  "&structure=" +
+                  structure_id +
+                  "&snapshot1=" +
+                  datesMap[dateText] +
+                  "&snapshot2=" +
+                  inTilesetID2 +
+                  "&mode=" +
+                  mode +
+                  "&camera=" +
+                  JSON.stringify(cam) +
+                  "&token=" +
+                  token;
+              } else {
+                window.location.href =
+                  "https://internal.constructn.ai/tour1?project=" +
+                  mainProjectID +
+                  "&structure=" +
+                  structure_id +
+                  "&snapshot1=" +
+                  inTilesetID +
+                  "&snapshot2=" +
+                  datesMap[dateText] +
+                  "&mode=" +
+                  mode +
+                  "&camera=" +
+                  JSON.stringify(cam) +
+                  "&token=" +
+                  token;
+              }
+              // window.location.href = 'https://'+ window.location.host + '/tour?project=' + inProjectID + '&snapshot1=' + datesMap[dateText] + '&snapshot2=' + inTilesetID2 + '&isExterior=0&isFM=1&mode=3d'
+            },
+          })
+          .datepicker("setDate", new Date(defaultDate));
+      }
+
+      function updateIconsDisplay() {
+        Array.from(
+          document.getElementsByClassName("actionButtonsTest")
+        ).forEach((ele) => {
+          $(ele).show();
+          if ($(ele).children(":visible").length === 0) {
+            $(ele).hide();
+          }
+        });
+      }
+
+      function getValue(datesMap, value) {
+        for (let key of Object.keys(datesMap)) {
+          if (datesMap[key] === value) return key;
+        }
+      }
+
+      function takeScreenshot(uploadPath, viewer) {
+        return new Promise((resolve, reject) => {
+          viewer.renderer.domElement.toBlob(function (blob) {
+            // saveAs(blob, "wholePage.png");
+            let file = new File([blob], "task.png");
+            let bodyData = {
+              paths: [uploadPath],
+            };
+
+            $.ajax({
+              url: `https://internal.constructn.ai/api/v1/aws/put-signed-url?bucket=${s3_bucket}`,
+              method: "POST",
+              crossDomain: true,
+              data: JSON.stringify(bodyData),
+              processData: false,
+              contentType: "application/json",
+              success: (reqUrl) => {
+                console.log(reqUrl);
+                $.ajax({
+                  url: reqUrl[0],
+                  method: "PUT",
+                  processData: false,
+                  contentType: false,
+                  data: blob,
+                  success: (reqUrl) => {
+                    console.log("Uploaded Screenshot to S3");
+                    resolve(
+                      `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${uploadPath}`
+                    );
+                  },
+                  error: (e) => {
+                    console.log(e);
+                  },
+                });
+              },
+              error: (e) => {
+                console.log(e);
+              },
+            });
+          });
+          // let div =
+          //     document.getElementById('fpContainer_1');
+
+          // 	return new Promise(resolve => {
+
+          // 		html2canvas(div, {
+          // 			dpi: 200,
+          // 			onrendered: function (canvas) {
+          // 				canvas.toBlob(function(blob) {
+          // 					// saveAs(blob, "wholePage.png");
+          // 					let file = new File([blob], 'task.png')
+        });
+      }
+
+      function fly_progress_walk(in_guid, viewer) {
+        console.log("Progress Walk : Flying to ", in_guid);
+        let db_ids = bimProgressData[viewer.canvasId]["mapping"][in_guid];
+        console.log("DB ID : ", db_ids);
+        viewer.isolate(db_ids);
+        viewer.fitToView(db_ids);
+      }
+
+      function exit_progress_walk(viewer) {
+        viewer.showAll();
+        viewer.fitToView();
+        progress_walk_index = 0;
+      }
+
+      function update_progress_walk(viewer, direction) {
+        if (direction == "next") {
+          progress_walk_index += 1;
+        } else if (direction == "prev") {
+          progress_walk_index -= 1;
+        }
+
+        if (progress_walk_index < 0) {
+          progress_walk_index =
+            bimProgressData[viewer.canvasId]["progress_delta"].length - 1;
+        } else if (
+          progress_walk_index >=
+          bimProgressData[viewer.canvasId]["progress_delta"].length
+        ) {
+          progress_walk_index = 0;
+        }
+
+        fly_progress_walk(
+          bimProgressData[viewer.canvasId]["progress_delta"][
+            progress_walk_index
+          ],
+          viewer
+        );
+      }
+
+      function addProgressWalkButtons(viewer) {
+        // let group = new Autodesk.Viewing.UI.ControlGroup('BimProgress');
+        // viewer.toolbar.addControl(group);
+
+        let group = viewer.toolbar.getControl("BimProgress");
+
+        // Add a new button to the toolbar group
+        let button_walk = new Autodesk.Viewing.UI.Button("progress_walk");
+        let icon_walk =
+          "https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/progress_walk.png";
+        button_walk.icon.style = `background-image: url(${icon_walk}); background-size: 24px 24px;`;
+        button_walk.setToolTip("Progress Walk");
+        button_walk.onClick = function (e) {
+          if (progress_walk_mode) {
+            exit_progress_walk(viewer);
+          } else {
+            update_progress_walk(viewer);
+          }
+          progress_walk_mode = !progress_walk_mode;
+        };
+
+        group.addControl(button_walk);
+
+        let button_next = new Autodesk.Viewing.UI.Button("progress_next");
+        let icon_next =
+          "https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/progress_walk_next.png";
+        button_next.icon.style = `background-image: url(${icon_next}); background-size: 24px 24px;`;
+        button_next.setToolTip("Next");
+        button_next.onClick = function (e) {
+          if (progress_walk_mode) {
+            update_progress_walk(viewer, "next");
+          }
+        };
+
+        group.addControl(button_next);
+
+        let button_prev = new Autodesk.Viewing.UI.Button("progress_prev");
+        let icon_prev =
+          "https://dtwin-viewers.s3.ap-south-1.amazonaws.com/icons/progress_walk_prev.png";
+        button_prev.icon.style = `background-image: url(${icon_prev}); background-size: 24px 24px;`;
+        button_prev.setToolTip("Prev");
+        button_prev.onClick = function (e) {
+          if (progress_walk_mode) {
+            update_progress_walk(viewer, "prev");
+          }
+        };
+
+        group.addControl(button_prev);
+      }
+
+      async function start_progress_delta_walk(viewer) {
+        // const progress_delta_raw = await fetch(`http://localhost:4200/progress_delta.json`);
+        // if (progress_delta_raw.status == 200) {
+        // const progress_delta = JSON.parse(await progress_delta_raw.text())['delta_elements'];
+        // console.log(progress_delta);
+        // bimProgressData[viewer.canvasId]['progress_delta'] = progress_delta;
+        // fly_progress_walk(bimProgressData[viewer.canvasId]['progress_delta'][progress_walk_index], viewer)
+        // }
+      }
+
+      async function loadProgressWalk(viewer, projectID, tilesetID) {
+        // const progress_delta_raw = await fetch(`http://localhost:4200/progress_delta.json`);
+        const progress_delta_raw = await fetch(
+          `https://${s3_bucket}.s3.ap-south-1.amazonaws.com/${mainProjectID}/structures/${projectID}/snapshots/${tilesetID}/bim_progress_delta.json`
+        );
+        if (progress_delta_raw.status == 200) {
+          const progress_delta = JSON.parse(await progress_delta_raw.text())[
+            "delta_elements"
+          ];
+          bimProgressData[viewer.canvasId]["progress_delta"] = progress_delta;
+          addProgressWalkButtons(viewer);
+          console.log("Progress Walk Loaded");
+        }
+      }
+    </script>
+  </body>
+</html>

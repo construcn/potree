@@ -788,6 +788,7 @@ export class Viewer extends EventDispatcher{
 	};
 
 	zoomTo(node, factor, animationDuration = 0){
+		let changeEvent = new CustomEvent("camerachange");
 		let view = this.scene.view;
 
 		let camera = this.scene.cameraP.clone();
@@ -825,6 +826,7 @@ export class Viewer extends EventDispatcher{
 
 			tween.onUpdate(() => {
 				view.position.copy(pos);
+				document.dispatchEvent(changeEvent);
 			});
 
 			tween.start();
@@ -836,10 +838,12 @@ export class Viewer extends EventDispatcher{
 			tween.easing(easing);
 			tween.onUpdate(() => {
 				view.lookAt(target);
+				document.dispatchEvent(changeEvent);
 			});
 			tween.onComplete(() => {
 				view.lookAt(target);
 				this.dispatchEvent({type: 'focusing_finished', target: this});
+				document.dispatchEvent(changeEvent);
 			});
 
 			this.dispatchEvent({type: 'focusing_started', target: this});
@@ -1205,118 +1209,118 @@ export class Viewer extends EventDispatcher{
 		}
 
 		let viewer = this;
-		let sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
-			sidebarContainer.css('width', '300px');
-			sidebarContainer.css('height', '100%');
+		// let sidebarContainer = $('#potree_sidebar_container');
+		// sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
+		// 	sidebarContainer.css('width', '300px');
+		// 	sidebarContainer.css('height', '100%');
 
-			let imgMenuToggle = document.createElement('img');
-			imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
-			imgMenuToggle.onclick = this.toggleSidebar;
-			imgMenuToggle.classList.add('potree_menu_toggle');
+		// 	let imgMenuToggle = document.createElement('img');
+		// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+		// 	imgMenuToggle.onclick = this.toggleSidebar;
+		// 	imgMenuToggle.classList.add('potree_menu_toggle');
 
-			let imgMapToggle = document.createElement('img');
-			imgMapToggle.src = new URL(Potree.resourcePath + '/icons/map_icon.png').href;
-			imgMapToggle.style.display = 'none';
-			imgMapToggle.onclick = e => { this.toggleMap(); };
-			imgMapToggle.id = 'potree_map_toggle';
+		// 	let imgMapToggle = document.createElement('img');
+		// 	imgMapToggle.src = new URL(Potree.resourcePath + '/icons/map_icon.png').href;
+		// 	imgMapToggle.style.display = 'none';
+		// 	imgMapToggle.onclick = e => { this.toggleMap(); };
+		// 	imgMapToggle.id = 'potree_map_toggle';
 
 			
 
-			let elButtons = $("#potree_quick_buttons").get(0);
+		// 	let elButtons = $("#potree_quick_buttons").get(0);
 
-			elButtons.append(imgMenuToggle);
-			elButtons.append(imgMapToggle);
+		// 	elButtons.append(imgMenuToggle);
+		// 	elButtons.append(imgMapToggle);
 
 
-			VRButton.createButton(this.renderer).then(vrButton => {
+		// 	VRButton.createButton(this.renderer).then(vrButton => {
 
-				if(vrButton == null){
-					console.log("VR not supported or active.");
+		// 		if(vrButton == null){
+		// 			console.log("VR not supported or active.");
 
-					return;
-				}
+		// 			return;
+		// 		}
 
-				this.renderer.xr.enabled = true;
+		// 		this.renderer.xr.enabled = true;
 
-				let element = vrButton.element;
+		// 		let element = vrButton.element;
 
-				element.style.position = "";
-				element.style.bottom = "";
-				element.style.left = "";
-				element.style.margin = "4px";
-				element.style.fontSize = "100%";
-				element.style.width = "2.5em";
-				element.style.height = "2.5em";
-				element.style.padding = "0";
-				element.style.textShadow = "black 2px 2px 2px";
-				element.style.display = "block";
+		// 		element.style.position = "";
+		// 		element.style.bottom = "";
+		// 		element.style.left = "";
+		// 		element.style.margin = "4px";
+		// 		element.style.fontSize = "100%";
+		// 		element.style.width = "2.5em";
+		// 		element.style.height = "2.5em";
+		// 		element.style.padding = "0";
+		// 		element.style.textShadow = "black 2px 2px 2px";
+		// 		element.style.display = "block";
 
-				elButtons.append(element);
+		// 		elButtons.append(element);
 
-				vrButton.onStart(() => {
-					this.dispatchEvent({type: "vr_start"});
-				});
+		// 		vrButton.onStart(() => {
+		// 			this.dispatchEvent({type: "vr_start"});
+		// 		});
 
-				vrButton.onEnd(() => {
-					this.dispatchEvent({type: "vr_end"});
-				});
-			});
+		// 		vrButton.onEnd(() => {
+		// 			this.dispatchEvent({type: "vr_end"});
+		// 		});
+		// 	});
 
-			this.mapView = new MapView(this);
-			this.mapView.init();
+		// 	this.mapView = new MapView(this);
+		// 	this.mapView.init();
 
-			i18n.init({
-				lng: 'en',
-				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca'],
-				getAsync: true,
-				debug: false
-			}, function (t) {
-				// Start translation once everything is loaded
-				$('body').i18n();
-			});
+		// 	i18n.init({
+		// 		lng: 'en',
+		// 		resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
+		// 		preload: ['en', 'fr', 'de', 'jp', 'se', 'es'],
+		// 		getAsync: true,
+		// 		debug: false
+		// 	}, function (t) {
+		// 		// Start translation once everything is loaded
+		// 		$('body').i18n();
+		// 	});
 
-			$(() => {
-				//initSidebar(this);
-				let sidebar = new Sidebar(this);
-				sidebar.init();
+		// 	$(() => {
+		// 		//initSidebar(this);
+		// 		let sidebar = new Sidebar(this);
+		// 		sidebar.init();
 
-				this.sidebar = sidebar;
+		// 		this.sidebar = sidebar;
 
-				//if (callback) {
-				//	$(callback);
-				//}
+		// 		//if (callback) {
+		// 		//	$(callback);
+		// 		//}
 
-				let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
-					$(document.body).append(elProfile.children());
-					this.profileWindow = new ProfileWindow(this);
-					this.profileWindowController = new ProfileWindowController(this);
+		// 		let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
+		// 			$(document.body).append(elProfile.children());
+		// 			this.profileWindow = new ProfileWindow(this);
+		// 			this.profileWindowController = new ProfileWindowController(this);
 
-					$('#profile_window').draggable({
-						handle: $('#profile_titlebar'),
-						containment: $(document.body)
-					});
-					$('#profile_window').resizable({
-						containment: $(document.body),
-						handles: 'n, e, s, w'
-					});
+		// 			$('#profile_window').draggable({
+		// 				handle: $('#profile_titlebar'),
+		// 				containment: $(document.body)
+		// 			});
+		// 			$('#profile_window').resizable({
+		// 				containment: $(document.body),
+		// 				handles: 'n, e, s, w'
+		// 			});
 
-					$(() => {
+		// 			$(() => {
 						this.guiLoaded = true;
 						for(let task of this.guiLoadTasks){
 							task();
 						}
 
-					});
-				});
+		// 			});
+		// 		});
 
 				
 
-			});
+		// 	});
 
 			
-		});
+		// });
 
 		return this.promiseGuiLoaded();
 	}
@@ -1349,14 +1353,14 @@ export class Viewer extends EventDispatcher{
 
 				const file = item.getAsFile();
 
-				const isJson5 = file.name.toLowerCase().endsWith(".json5");
+				const isJson = file.name.toLowerCase().endsWith(".json");
 				const isGeoPackage = file.name.toLowerCase().endsWith(".gpkg");
 
-				if(isJson5){
+				if(isJson){
 					try{
 
 						const text = await file.text();
-						const json = JSON5.parse(text);
+						const json = JSON.parse(text);
 
 						if(json.type === "Potree"){
 							Potree.loadProject(viewer, json);
