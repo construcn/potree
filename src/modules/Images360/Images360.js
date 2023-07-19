@@ -151,6 +151,8 @@ export class Images360 extends EventDispatcher{
 			}
 			
 		}
+		if(index!=this.images.length-1)
+		{
 			let i = index + 1
 			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
 			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
@@ -165,7 +167,7 @@ export class Images360 extends EventDispatcher{
 			this.images[i].ringGroup.visible = true
 			this.visibleRings.push(this.images[i])	
 			}
-		
+		}
 		this.selectingEnabled = true;
 		
 		this.sphere.visible = false;
