@@ -1,35 +1,19 @@
 
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
-import {TextSprite} from "../../TextSprite.js";
-
-let sg = new THREE.SphereGeometry(1, 8, 8);
-let sgHigh = new THREE.SphereGeometry(1, 128, 128);
-
-let sm = new THREE.MeshBasicMaterial({side: THREE.BackSide});
-let smHovered = new THREE.MeshBasicMaterial({side: THREE.BackSide, color: 0xff0000});
-
-let raycaster = new THREE.Raycaster();
-let currentlyHovered = null;
-
-let previousView = {
-	controls: null,
-	position: null,
-	target: null,
-};
-
 class Image360{
 
-	constructor(file, time, longitude, latitude, altitude, course, pitch, roll){
+	constructor(file, thumbnail, longitude, latitude, altitude, course, pitch, roll){
 		this.file = file;
-		this.time = time;
+		this.thumbnail = thumbnail;
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.altitude = altitude;
 		this.course = course;
 		this.pitch = pitch;
 		this.roll = roll;
-		this.mesh = null;
+		this.ringGroup=null
+		this.visibleRings=[]
 	}
 };
 
@@ -44,42 +28,53 @@ export class Images360 extends EventDispatcher{
 
 		this.images = [];
 		this.node = new THREE.Object3D();
-
-		this.sphere = new THREE.Mesh(sgHigh, sm);
+		this.visibleRings=[]		
+		this.sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 128), new THREE.MeshBasicMaterial({side: THREE.BackSide}));
 		this.sphere.visible = false;
-		this.sphere.scale.set(1000, 1000, 1000);
+		this.sphere.scale.set(-1000, 1000, 1000);
+		this.focus = this.focus.bind(this);
+		this.unfocus = this.unfocus.bind(this);
 		this.node.add(this.sphere);
 		this._visible = true;
-		// this.node.add(label);
-
 		this.focusedImage = null;
-
-		let elUnfocus = document.createElement("input");
-		elUnfocus.type = "button";
-		elUnfocus.value = "unfocus";
-		elUnfocus.style.position = "absolute";
-		elUnfocus.style.right = "10px";
-		elUnfocus.style.bottom = "10px";
-		elUnfocus.style.zIndex = "10000";
-		elUnfocus.style.fontSize = "2em";
-		elUnfocus.addEventListener("click", () => this.unfocus());
-		this.elUnfocus = elUnfocus;
-
-		this.domRoot = viewer.renderer.domElement.parentElement;
-		this.domRoot.appendChild(elUnfocus);
-		this.elUnfocus.style.display = "none";
-
+		this.currentlyHovered = null;
+		this.previousView = {
+			controls: null,
+			position: null,
+			target: null,
+		};
+		this.raycaster = new THREE.Raycaster();
+		this.hoverMaterial = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:''});
+		this.sm = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:'#FF843F'});
 		viewer.addEventListener("update", () => {
 			this.update(viewer);
 		});
 		viewer.inputHandler.addInputListener(this);
 
 		this.addEventListener("mousedown", () => {
-			if(currentlyHovered && currentlyHovered.image360){
-				this.focus(currentlyHovered.image360);
+			if(this.currentlyHovered && this.currentlyHovered.image360){
+				this.focus(this.currentlyHovered.image360);
+				const event = new CustomEvent("onRingClick", {
+                    detail: {
+                        viewer: this.viewer.canvasId,
+                        image: this.currentlyHovered.image360
+                    }
+                });
+                document.dispatchEvent(event);
 			}
 		});
-		
+		this.addEventListener("touchend", () => {
+			if(this.currentlyHovered && this.currentlyHovered.image360){
+				this.focus(this.currentlyHovered.image360);
+				const event = new CustomEvent("onRingClick", {
+                    detail: {
+                        viewer: this.viewer.canvasId,
+                        image: this.currentlyHovered.image360
+                    }
+                });
+                document.dispatchEvent(event);
+			}
+		});
 	};
 
 	set visible(visible){
@@ -89,7 +84,7 @@ export class Images360 extends EventDispatcher{
 
 
 		for(const image of this.images){
-			image.mesh.visible = visible && (this.focusedImage == null);
+			image.ringGroup.visible = visible && (this.focusedImage == null);
 		}
 
 		this.sphere.visible = visible && (this.focusedImage != null);
@@ -104,146 +99,211 @@ export class Images360 extends EventDispatcher{
 		return this._visible;
 	}
 
-	focus(image360){
+	focus(image360, sendEvent = true, inTarget = null){
 		if(this.focusedImage !== null){
 			this.unfocus();
 		}
-
-		previousView = {
-			controls: this.viewer.controls,
-			position: this.viewer.scene.view.position.clone(),
-			target: viewer.scene.view.getPivot(),
-		};
-
-		this.viewer.setControls(this.viewer.orbitControls);
-		this.viewer.orbitControls.doubleClockZoomEnabled = false;
-
-		for(let image of this.images){
-			image.mesh.visible = false;
+		this.viewer.setEDLOpacity(0);
+		if (sendEvent) {
+			const event = new CustomEvent("panoLoad", {
+				detail: {
+					viewer: this.viewer.canvasId,
+					image: image360
+				}
+			});
+			document.dispatchEvent(event);
 		}
 
-		this.selectingEnabled = false;
+		this.previousView = {
+			controls: this.viewer.controls,
+			position: this.viewer.scene.view.position.clone(),
+			target: this.viewer.scene.view.getPivot(),
+		};
+		this.viewer.setControls(this.viewer.orbitControls);
+		this.viewer.orbitControls.isInterior = true;
+		this.viewer.orbitControls.doubleClockZoomEnabled = false;
+		let index = this.images.findIndex( element => {
+		if (element.file === image360.file) {
+		return true;
+		}
+		});
+		
+		for(let image of this.images){
+			image.ringGroup.visible=false
+		}
+		
+		if(index != 0)
+		{
 
+			let i = index - 1
+			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
+			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
+			let dist = current.distanceTo(next)
+			while(dist < 3 && i > 0) {
+				i--
+				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
+				dist = current.distanceTo(next)
+			}
+			if(i>-1)
+			{
+			this.images[i].ringGroup.visible = true
+			this.visibleRings.push(this.images[i])
+			}
+			
+		}
+		if(index!=this.images.length-1)
+		{
+			let i = index + 1
+			let current = new THREE.Vector3(this.images[index].position[0], this.images[index].position[1], this.images[index].position[2])
+			let next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
+			let dist = current.distanceTo(next)
+			while(dist < 3 && i<this.images.length-1) {
+				i++
+				next = new THREE.Vector3(this.images[i].position[0], this.images[i].position[1], this.images[i].position[2])
+				dist = current.distanceTo(next)
+			}
+			if(i<this.images.length)
+			{
+			this.images[i].ringGroup.visible = true
+			this.visibleRings.push(this.images[i])	
+			}
+		}
+		this.selectingEnabled = true;
+		
 		this.sphere.visible = false;
-
 		this.load(image360).then( () => {
 			this.sphere.visible = true;
 			this.sphere.material.map = image360.texture;
 			this.sphere.material.needsUpdate = true;
 		});
-
-		{ // orientation
 			let {course, pitch, roll} = image360;
 			this.sphere.rotation.set(
-				THREE.Math.degToRad(+roll + 90),
-				THREE.Math.degToRad(-pitch),
-				THREE.Math.degToRad(-course + 90),
-				"ZYX"
-			);
-		}
-
+			THREE.Math.degToRad(course),
+			THREE.Math.degToRad(pitch),
+			THREE.Math.degToRad(roll),
+			"XYZ"
+		);
 		this.sphere.position.set(...image360.position);
-
 		let target = new THREE.Vector3(...image360.position);
-		let dir = target.clone().sub(viewer.scene.view.position).normalize();
+		let dir = target.clone().sub(this.viewer.scene.view.position).normalize();
 		let move = dir.multiplyScalar(0.000001);
 		let newCamPos = target.clone().sub(move);
-
-		viewer.scene.view.setView(
+		this.viewer.scene.view.setView(
 			newCamPos, 
 			target,
-			500
+			500,
+			() => {
+				if (inTarget && inTarget.pitch) {
+					this.viewer.scene.view.pitch = inTarget.pitch
+					this.viewer.scene.view.yaw = inTarget.yaw
+				}
+			}
 		);
 
 		this.focusedImage = image360;
 
-		this.elUnfocus.style.display = "";
 	}
 
-	unfocus(){
+	unfocus(sendEvent = true){
 		this.selectingEnabled = true;
-
-		for(let image of this.images){
-			image.mesh.visible = true;
-		}
-
+		this.viewer.setEDLOpacity(1);
 		let image = this.focusedImage;
-
 		if(image === null){
 			return;
 		}
-
-
 		this.sphere.material.map = null;
 		this.sphere.material.needsUpdate = true;
 		this.sphere.visible = false;
+		this.sphere.position.set(this.sphere.position - [...this.images[0].position]);
 
-		let pos = viewer.scene.view.position;
-		let target = viewer.scene.view.getPivot();
+		let pos = this.viewer.scene.view.position;
+		let target = this.viewer.scene.view.getPivot();
 		let dir = target.clone().sub(pos).normalize();
 		let move = dir.multiplyScalar(10);
 		let newCamPos = target.clone().sub(move);
 
-		viewer.orbitControls.doubleClockZoomEnabled = true;
-		viewer.setControls(previousView.controls);
-
-		viewer.scene.view.setView(
-			previousView.position, 
-			previousView.target,
-			500
-		);
-
-
+		this.viewer.orbitControls.doubleClockZoomEnabled = true;
+		this.viewer.orbitControls.isInterior = false;
+		this.viewer.setControls(this.previousView.controls);
 		this.focusedImage = null;
+		
+		if (sendEvent) {
+			const event = new CustomEvent("panoUnload", {
+				detail: {
+					viewer: this.viewer.canvasId
+				}
+			});
+			document.dispatchEvent(event);
+		}
 
-		this.elUnfocus.style.display = "none";
 	}
 
 	load(image360){
-
+		let resolved = false;
 		return new Promise(resolve => {
-			let texture = new THREE.TextureLoader().load(image360.file, resolve);
-			texture.wrapS = THREE.RepeatWrapping;
-			texture.repeat.x = -1;
+			if (image360.texture) {
+				resolve(null);
+			} else {
+				new THREE.TextureLoader().load(image360.thumbnail,
+					texture => {
+							//var sphereMaterial = new MeshBasicMaterial({ map: texture, side: DoubleSide });
+                            //image360.texture = sphereMaterial;
+							image360.texture = texture;
+							resolved = true;
+							resolve(null);
+							loadOrgImage.bind(this)();
+						},
+					undefined,
+					err => {
+						loadOrgImage.bind(this)();
+					});
+				let loadOrgImage = function () {
 
-			image360.texture = texture;
+					new THREE.TextureLoader().load(image360.file,
+						texture => {
+								//var sphereMaterial = new MeshBasicMaterial({ map: texture, side: DoubleSide });
+                            	//image360.texture = sphereMaterial;
+								image360.texture = texture;
+								this.sphere.visible = true;
+								this.sphere.material.map = image360.texture;
+								this.sphere.material.needsUpdate = true;
+								if (!resolved) {
+									resolve(null);
+								}
+							});
+				}
+
+			}
 		});
 
 	}
 
 	handleHovering(){
-		let mouse = viewer.inputHandler.mouse;
-		let camera = viewer.scene.getActiveCamera();
-		let domElement = viewer.renderer.domElement;
-
+		let mouse = this.viewer.inputHandler.mouse;
+		let camera = this.viewer.scene.getActiveCamera();
+		let domElement = this.viewer.renderer.domElement;
 		let ray = Potree.Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
-
-		// let tStart = performance.now();
-		raycaster.ray.copy(ray);
-		let intersections = raycaster.intersectObjects(this.node.children);
-
+		this.raycaster.ray.copy(ray);
+		let intersections = this.raycaster.intersectObjects(this.visibleRings.map(image=>{
+			return image.ringGroup.children[1]}));
 		if(intersections.length === 0){
-			// label.visible = false;
-
 			return;
 		}
-
 		let intersection = intersections[0];
-		currentlyHovered = intersection.object;
-		currentlyHovered.material = smHovered;
-
-		//label.visible = true;
-		//label.setText(currentlyHovered.image360.file);
-		//currentlyHovered.getWorldPosition(label.position);
+		if(intersection.object.parent.visible===true)
+		{
+		this.currentlyHovered = intersection.object.parent.children[0];
+		this.currentlyHovered.material = this.hoverMaterial;
+		}
+		
 	}
 
 	update(){
 
 		let {viewer} = this;
-
-		if(currentlyHovered){
-			currentlyHovered.material = sm;
-			currentlyHovered = null;
+		if(this.currentlyHovered){
+			this.currentlyHovered.material = this.sm;
+			this.currentlyHovered = null;
 		}
 
 		if(this.selectingEnabled){
@@ -251,94 +311,95 @@ export class Images360 extends EventDispatcher{
 		}
 
 	}
-
 };
 
 
 export class Images360Loader{
 
-	static async load(url, viewer, params = {}){
+	static async load(url, imgsUrl, viewer, tm_data, params = {}){
 
 		if(!params.transform){
 			params.transform = {
 				forward: a => a,
 			};
 		}
-		
-		let response = await fetch(`${url}/coordinates.txt`);
-		let text = await response.text();
 
-		let lines = text.split(/\r?\n/);
-		let coordinateLines = lines.slice(1);
+		let tmatrix, toffset;
+		
+		tmatrix = tm_data.tm;
+		toffset = tm_data.offset;
+		
+		let response = await fetch(url);
+		let text = await response.text();
+		let imgData = JSON.parse(text);
 
 		let images360 = new Images360(viewer);
 
-		for(let line of coordinateLines){
+		Object.keys(imgData).forEach(imgName => {
+			let raw_position = imgData[imgName].position;
+			let rotation = imgData[imgName].rotation;
+			
+			const pos = new THREE.Vector4(raw_position[0], raw_position[1], raw_position[2], 1);
+			pos.applyMatrix4(tmatrix);
+			const long = parseFloat(pos.x - toffset[0]);
+			const lat = parseFloat(pos.y - toffset[1]);
+			const alt = parseFloat((pos.z - toffset[2]));
+			const course = parseFloat(rotation[0]);
+			const pitch = parseFloat(rotation[1]);
+			const roll = parseFloat(rotation[2]);
 
-			if(line.trim().length === 0){
-				continue;
-			}
+			let file = `${imgsUrl}/${imgName}`;
+			let thumbnail = `${imgsUrl}/thumbnails/${imgName}`;
+			let image360 = new Image360(file, thumbnail, long, lat, alt, course, pitch, roll);
 
-			let tokens = line.split(/\t/);
-
-			let [filename, time, long, lat, alt, course, pitch, roll] = tokens;
-			time = parseFloat(time);
-			long = parseFloat(long);
-			lat = parseFloat(lat);
-			alt = parseFloat(alt);
-			course = parseFloat(course);
-			pitch = parseFloat(pitch);
-			roll = parseFloat(roll);
-
-			filename = filename.replace(/"/g, "");
-			let file = `${url}/${filename}`;
-
-			let image360 = new Image360(file, time, long, lat, alt, course, pitch, roll);
-
-			let xy = params.transform.forward([long, lat]);
-			let position = [...xy, alt];
+			let position = [long, lat, alt];
 			image360.position = position;
 
 			images360.images.push(image360);
-		}
+		});
 
-		Images360Loader.createSceneNodes(images360, params.transform);
+		images360.images.sort(function (a, b) {
+			const getFileNumber = (file) => {
+				const numberPattern = /\d+/g;
+				const numbers = file.match(numberPattern);
+				if (numbers) {
+				return numbers.map((num) => num.padStart(10, '0')).join('');
+				}
+				return file;
+			};
 
-		return images360;
+			const fileANumber = getFileNumber(a.file);
+			const fileBNumber = getFileNumber(b.file);
+			return fileANumber.localeCompare(fileBNumber);
+		});
+
+		 Images360Loader.createSceneNodes(images360);
+			return images360;
 
 	}
 
-	static createSceneNodes(images360, transform){
+	static createSceneNodes(images360){
 
 		for(let image360 of images360.images){
 			let {longitude, latitude, altitude} = image360;
-			let xy = transform.forward([longitude, latitude]);
-
-			let mesh = new THREE.Mesh(sg, sm);
-			mesh.position.set(...xy, altitude);
-			mesh.scale.set(1, 1, 1);
-			mesh.material.transparent = true;
-			mesh.material.opacity = 0.75;
-			mesh.image360 = image360;
-
-			{ // orientation
-				var {course, pitch, roll} = image360;
-				mesh.rotation.set(
-					THREE.Math.degToRad(+roll + 90),
-					THREE.Math.degToRad(-pitch),
-					THREE.Math.degToRad(-course + 90),
-					"ZYX"
-				);
-			}
-
-			images360.node.add(mesh);
-
-			image360.mesh = mesh;
+			let ringMesh = new THREE.Mesh(new THREE.RingGeometry( 0.35, .5, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#FF843F'}));
+			ringMesh.position.set(longitude, latitude, altitude - 2.0);
+			ringMesh.scale.set(1, 1, 1);
+			ringMesh.material.transparent = true;
+			ringMesh.material.opacity = 0.75;
+			ringMesh.image360 = image360;
+			let circleMesh = new THREE.Mesh(new THREE.CircleGeometry( .5, 32 ), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+			circleMesh.position.set(longitude, latitude, altitude - 2.0);
+			circleMesh.scale.set(1, 1, 1);
+			circleMesh.material.transparent = true;
+			circleMesh.material.opacity = 0;
+			circleMesh.image360 = image360;
+			const ringGroup = new THREE.Group();
+			ringGroup.add( ringMesh );
+			ringGroup.add( circleMesh );
+			images360.node.add(ringGroup);
+			image360.ringGroup=ringGroup
 		}
 	}
-
-	
-
 };
-
 
