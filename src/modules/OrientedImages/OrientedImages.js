@@ -410,24 +410,31 @@ export class OrientedImageLoader {
       }
 	  
       function loadImageTexture(path) {
-        return new Promise((resolve, reject) => {
-          new THREE.TextureLoader().load(path, (texture) => {
+	return new Promise((resolve, reject) => {
+		new THREE.TextureLoader().load(
+		path,
+		(texture) => {
+			resolve(texture);
+		},
+		undefined,
+		(error) => {
+		new THREE.TextureLoader().load(`${Potree.resourcePath}/images/loading.jpg`, (texture) => {
             resolve(texture);
           });
-        });
-      }
-
-      function updateTexture(texture) {
+		}
+		);
+	});
+	}
+	function updateTexture(texture) {
         target.texture = texture;
         target.mesh.material.uniforms.tColor.value = texture;
         mesh.material.needsUpdate = true;
       }
 
       viewer.scene.orientedImages[0].focused = image;
-    	const tmpImagePath = `${Potree.resourcePath}/images/loading.jpg`;
-      //const tmpImagePath = `${imagesPath}/thumbnails/${target.id}`;
-      let texture = await loadImageTexture(tmpImagePath);
-      updateTexture(texture);
+     const tmpImagePath = `${imagesPath}/thumbnails/${target.id}`;
+	 let texture = await loadImageTexture(tmpImagePath);
+	  updateTexture(texture);
       setTimeout(() => {
         orientedImageControls.capture(image);
       }, 100);
