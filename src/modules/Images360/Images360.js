@@ -176,7 +176,6 @@ export class Images360 extends EventDispatcher{
 				this.sphere.visible = true;
 				this.sphere.material.map = image360.texture;
 				this.sphere.material.needsUpdate = true;
-				this.sphere.children[0].position.set(...image360.position)
 			}
 		});
 			let {course, pitch, roll} = image360;
