@@ -53,7 +53,7 @@ export class Images360 extends EventDispatcher{
 
 		this.addEventListener("mousedown", () => {
 			if(this.currentlyHovered && this.currentlyHovered.image360){
-				this.focus(this.currentlyHovered.image360);
+				// this.focus(this.currentlyHovered.image360);
 				const event = new CustomEvent("onRingClick", {
                     detail: {
                         viewer: this.viewer.canvasId,
@@ -65,7 +65,7 @@ export class Images360 extends EventDispatcher{
 		});
 		this.addEventListener("touchend", () => {
 			if(this.currentlyHovered && this.currentlyHovered.image360){
-				this.focus(this.currentlyHovered.image360);
+				// this.focus(this.currentlyHovered.image360);
 				const event = new CustomEvent("onRingClick", {
                     detail: {
                         viewer: this.viewer.canvasId,
@@ -172,9 +172,12 @@ export class Images360 extends EventDispatcher{
 		
 		this.sphere.visible = false;
 		this.load(image360).then( () => {
-			this.sphere.visible = true;
-			this.sphere.material.map = image360.texture;
-			this.sphere.material.needsUpdate = true;
+			if (this.sphere) {
+				this.sphere.visible = true;
+				this.sphere.material.map = image360.texture;
+				this.sphere.material.needsUpdate = true;
+				this.sphere.children[0].position.set(...image360.position)
+			}
 		});
 			let {course, pitch, roll} = image360;
 			this.sphere.rotation.set(
@@ -184,6 +187,7 @@ export class Images360 extends EventDispatcher{
 			"XYZ"
 		);
 		this.sphere.position.set(...image360.position);
+		
 		let target = new THREE.Vector3(...image360.position);
 		let dir = target.clone().sub(this.viewer.scene.view.position).normalize();
 		let move = dir.multiplyScalar(0.000001);
@@ -207,6 +211,9 @@ export class Images360 extends EventDispatcher{
 	unfocus(sendEvent = true){
 		this.selectingEnabled = true;
 		this.viewer.setEDLOpacity(1);
+		for(let image of this.images){
+			image.ringGroup.visible = false;
+		}
 		let image = this.focusedImage;
 		if(image === null){
 			return;
@@ -264,9 +271,11 @@ export class Images360 extends EventDispatcher{
 								//var sphereMaterial = new MeshBasicMaterial({ map: texture, side: DoubleSide });
                             	//image360.texture = sphereMaterial;
 								image360.texture = texture;
-								this.sphere.visible = true;
-								this.sphere.material.map = image360.texture;
-								this.sphere.material.needsUpdate = true;
+								if (this.sphere) {
+									this.sphere.visible = true;
+									this.sphere.material.map = image360.texture;
+									this.sphere.material.needsUpdate = true;
+								}
 								if (!resolved) {
 									resolve(null);
 								}

@@ -390,8 +390,6 @@ export class OrientedImageLoader {
     const moveToImage = async (image, sendEvent = true) => {
       viewer.controls.enabled = false;
 
-      
-
       const mesh = image.mesh;
       const target = image;
 
@@ -399,7 +397,37 @@ export class OrientedImageLoader {
       const newCamTarget = mesh.position.clone();
 
       viewer.scene.view.setView(newCamPos, newCamTarget);
-	if (sendEvent) {
+
+
+      function loadImageTexture(path) {
+        return new Promise((resolve, reject) => {
+          new THREE.TextureLoader().load(
+            path,
+            (texture) => {
+              resolve(texture);
+            },
+            undefined,
+            (error) => {
+              new THREE.TextureLoader().load(
+                `${Potree.resourcePath}/images/loading.jpg`,
+                (texture) => {
+                  resolve(texture);
+                }
+              );
+            }
+          );
+        });
+      }
+      function updateTexture(texture) {
+        target.texture = texture;
+        target.mesh.material.uniforms.tColor.value = texture;
+        mesh.material.needsUpdate = true;
+      }
+
+      viewer.scene.orientedImages[0].focused = image;
+      const tmpImagePath = `${imagesPath}/thumbnails/${target.id}`;
+      let texture = await loadImageTexture(tmpImagePath);
+      if (sendEvent) {
         const event = new CustomEvent("imageLoad", {
           detail: {
             viewer: viewer.canvasId,
@@ -408,33 +436,7 @@ export class OrientedImageLoader {
         });
         document.dispatchEvent(event);
       }
-	  
-      function loadImageTexture(path) {
-	return new Promise((resolve, reject) => {
-		new THREE.TextureLoader().load(
-		path,
-		(texture) => {
-			resolve(texture);
-		},
-		undefined,
-		(error) => {
-		new THREE.TextureLoader().load(`${Potree.resourcePath}/images/loading.jpg`, (texture) => {
-            resolve(texture);
-          });
-		}
-		);
-	});
-	}
-	function updateTexture(texture) {
-        target.texture = texture;
-        target.mesh.material.uniforms.tColor.value = texture;
-        mesh.material.needsUpdate = true;
-      }
-
-      viewer.scene.orientedImages[0].focused = image;
-     const tmpImagePath = `${imagesPath}/thumbnails/${target.id}`;
-	 let texture = await loadImageTexture(tmpImagePath);
-	  updateTexture(texture);
+      updateTexture(texture);
       setTimeout(() => {
         orientedImageControls.capture(image);
       }, 100);
