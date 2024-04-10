@@ -151,6 +151,7 @@ export class View{
 		if(duration === 0){
 			this.position.copy(endPosition);
 			this.lookAt(endTarget);
+			// document.dispatchEvent(changeEvent);
 		}else{
 			let value = {x: 0};
 			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
