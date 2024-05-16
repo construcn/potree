@@ -79,6 +79,9 @@ export class OrbitControls extends EventDispatcher {
     };
 
     let scroll = (e) => {
+      if (this.isInterior == true) {
+        return
+      }
       let resolvedRadius = this.scene.view.radius + this.radiusDelta;
 
       this.radiusDelta += -e.delta * resolvedRadius * 0.1;
