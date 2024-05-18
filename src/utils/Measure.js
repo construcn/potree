@@ -303,7 +303,7 @@ export class Measure extends THREE.Object3D {
 		this.lineMaterial = new LineMaterial({
 			color: 0xff0000, 
 			linewidth: 2, 
-			resolution:  new Vector2(1000, 1000),
+			resolution:  new THREE.Vector2(1000, 1000),
 		});
 		this.color = new THREE.Color(0xff0000);
 
