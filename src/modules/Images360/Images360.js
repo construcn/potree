@@ -196,9 +196,13 @@ export class Images360 extends EventDispatcher{
 			target,
 			500,
 			() => {
-				if (inTarget && inTarget.pitch) {
-					this.viewer.scene.view.pitch = inTarget.pitch
-					this.viewer.scene.view.yaw = inTarget.yaw
+				if (inTarget) {
+					if (inTarget.pitch) {
+						this.viewer.scene.view.pitch = inTarget.pitch
+					}
+					if (inTarget.yaw) {
+						this.viewer.scene.view.yaw = inTarget.yaw
+					}
 				}
 			}
 		);
