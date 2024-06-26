@@ -59,9 +59,13 @@ export class OrbitControls extends EventDispatcher {
       };
 
       if (e.drag.mouse === MOUSE.LEFT) {
-        this.yawDelta += ndrag.x * this.rotationSpeed;
-        this.pitchDelta += ndrag.y * this.rotationSpeed;
-
+        if (this.isInterior) {
+          this.yawDelta += -ndrag.x * this.rotationSpeed;
+          this.pitchDelta += -ndrag.y * this.rotationSpeed;  
+        } else {
+          this.yawDelta += ndrag.x * this.rotationSpeed;
+          this.pitchDelta += ndrag.y * this.rotationSpeed;  
+        }
         this.stopTweens();
       } else if (e.drag.mouse === MOUSE.RIGHT) {
         this.panDelta.x += ndrag.x;
