@@ -447,6 +447,12 @@ export class OrientedImageLoader {
     };
 
     const onMouseClick = (evt) => {
+      if (hoveredElement) {
+				const event = new CustomEvent("loadedOrientedImageClicked", {
+					detail: hoveredElement,
+				});
+				document.dispatchEvent(event);
+			};
       if (orientedImageControls.hasSomethingCaptured()) {
         return;
       }
@@ -470,7 +476,11 @@ export class OrientedImageLoader {
       for (const image of orientedImages) {
         const world = image.mesh.matrixWorld;
         const { width, height } = image;
-        const aspect = width / height;
+        let aspect = width / height;
+
+			  if(image.texture && image.texture.image){
+				  aspect = image.texture.image.width / image.texture.image.height;
+			  }
 
         const camera = viewer.scene.getActiveCamera();
 
