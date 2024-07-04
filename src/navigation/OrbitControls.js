@@ -37,7 +37,8 @@ export class OrbitControls extends EventDispatcher {
     this.radiusDelta = 0;
 
     this.doubleClockZoomEnabled = true;
-	this.isInterior=false
+	  this.isInterior = false
+    this.reversePan = false
     this.tweens = [];
 
     this.changeEvent = new CustomEvent("camerachange");
@@ -59,7 +60,7 @@ export class OrbitControls extends EventDispatcher {
       };
 
       if (e.drag.mouse === MOUSE.LEFT) {
-        if (this.isInterior) {
+        if (this.isInterior && this.reversePan == true) {
           this.yawDelta += -ndrag.x * this.rotationSpeed;
           this.pitchDelta += -ndrag.y * this.rotationSpeed;  
         } else {

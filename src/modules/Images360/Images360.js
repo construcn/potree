@@ -99,7 +99,7 @@ export class Images360 extends EventDispatcher{
 		return this._visible;
 	}
 
-	focus(image360, sendEvent = true, inTarget = null){
+	focus(image360, reversePan = false, sendEvent = true, inTarget = null){
 		if(this.focusedImage !== null){
 			this.unfocus();
 		}
@@ -121,6 +121,7 @@ export class Images360 extends EventDispatcher{
 		};
 		this.viewer.setControls(this.viewer.orbitControls);
 		this.viewer.orbitControls.isInterior = true;
+		this.viewer.orbitControls.reversePan = reversePan;
 		this.viewer.orbitControls.doubleClockZoomEnabled = false;
 		let index = this.images.findIndex( element => {
 		if (element.file === image360.file) {
@@ -234,6 +235,7 @@ export class Images360 extends EventDispatcher{
 
 		this.viewer.orbitControls.doubleClockZoomEnabled = true;
 		this.viewer.orbitControls.isInterior = false;
+		this.viewer.orbitControls.reversePan = false;
 		this.viewer.setControls(this.previousView.controls);
 		this.focusedImage = null;
 		
