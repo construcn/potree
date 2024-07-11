@@ -446,11 +446,13 @@ export class OrientedImageLoader {
       image.texture = texture_org;
     };
 
-    let is360ImageLoaded = viewer.scene.images360?.some(
+
+		const onMouseClick = (evt) => {
+
+    let is360ImageLoaded = viewer.scene.images360 && viewer.scene.images360.some(
 		(fcsimage) => !!fcsimage.focusedImage,
 	);
-	if (hoveredElement && !is360ImageLoaded) {
-		if (hoveredElement) {
+		if (hoveredElement && !is360ImageLoaded) {
 			const event = new CustomEvent('loadedOrientedImageClicked', {
 				detail: hoveredElement,
 			});
