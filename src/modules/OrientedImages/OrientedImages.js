@@ -7,7 +7,7 @@ function createMaterial() {
 	uniform float uNear;
 	varying vec2 vUV;
 	varying vec4 vDebug;
-	
+
 	void main(){
 		vDebug = vec4(0.0, 1.0, 0.0, 1.0);
 		vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
@@ -446,21 +446,24 @@ export class OrientedImageLoader {
       image.texture = texture_org;
     };
 
-    const onMouseClick = (evt) => {
-      if (hoveredElement) {
-				const event = new CustomEvent("loadedOrientedImageClicked", {
-					detail: hoveredElement,
-				});
-				document.dispatchEvent(event);
-			};
-      if (orientedImageControls.hasSomethingCaptured()) {
-        return;
-      }
+    let is360ImageLoaded = viewer.scene.images360?.some(
+		(fcsimage) => !!fcsimage.focusedImage,
+	);
+	if (hoveredElement && !is360ImageLoaded) {
+		if (hoveredElement) {
+			const event = new CustomEvent('loadedOrientedImageClicked', {
+				detail: hoveredElement,
+			});
+			document.dispatchEvent(event);
+		}
+		if (orientedImageControls.hasSomethingCaptured()) {
+			return;
+		}
 
-      if (hoveredElement) {
-        moveToImage(hoveredElement);
-      }
-    };
+		if (hoveredElement && !is360ImageLoaded) {
+			moveToImage(hoveredElement);
+		}
+	};
     viewer.renderer.domElement.addEventListener(
       "mousemove",
       onMouseMove,
