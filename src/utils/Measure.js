@@ -281,7 +281,7 @@ function createAzimuth(){
 }
 
 export class Measure extends THREE.Object3D {
-	constructor () {
+	constructor (draggable = true) {
 		super();
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
@@ -298,6 +298,8 @@ export class Measure extends THREE.Object3D {
 		this._showEdges = true;
 		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
+
+		this.draggable = draggable;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.lineMaterial = new LineMaterial({
@@ -412,6 +414,7 @@ export class Measure extends THREE.Object3D {
 
 		{ // Event Listeners
 			let drag = (e) => {
+				if(!this.draggable) return;
 				let I = Utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
