@@ -281,7 +281,7 @@ function createAzimuth(){
 }
 
 export class Measure extends THREE.Object3D {
-	constructor (draggable = true) {
+	constructor () {
 		super();
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;

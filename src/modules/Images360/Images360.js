@@ -45,7 +45,7 @@ export class Images360 extends EventDispatcher{
 		};
 		this.raycaster = new THREE.Raycaster();
 		this.hoverMaterial = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:''});
-		this.sm = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:'#FF843F'});
+		this.sm = new THREE.MeshBasicMaterial({side: THREE.DoubleSide,color:'#c03624'});
 		viewer.addEventListener("update", () => {
 			this.update(viewer);
 		});
@@ -396,7 +396,7 @@ export class Images360Loader{
 
 		for(let image360 of images360.images){
 			let {longitude, latitude, altitude} = image360;
-			let ringMesh = new THREE.Mesh(new THREE.RingGeometry( 0.35, .5, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#FF843F'}));
+			let ringMesh = new THREE.Mesh(new THREE.RingGeometry( 0.35, .5, 32 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:'#c03624'}));
 			ringMesh.position.set(longitude, latitude, altitude - 2.0);
 			ringMesh.scale.set(1, 1, 1);
 			ringMesh.material.transparent = true;

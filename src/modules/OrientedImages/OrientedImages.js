@@ -426,7 +426,7 @@ export class OrientedImageLoader {
 
       viewer.scene.orientedImages[0].focused = image;
       const tmpImagePath = `${imagesPath}/thumbnails/${target.id}`;
-      let texture = loadImageTexture(tmpImagePath);
+      let texture = await loadImageTexture(tmpImagePath);
       if (sendEvent) {
         const event = new CustomEvent("imageLoad", {
           detail: {
