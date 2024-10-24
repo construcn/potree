@@ -299,7 +299,7 @@ export class Measure extends THREE.Object3D {
 		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
-		this.draggable = draggable;
+		this.draggable = true;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.lineMaterial = new LineMaterial({
