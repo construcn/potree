@@ -283,13 +283,13 @@ export class OrbitControls extends EventDispatcher {
 
       yaw -= progression * this.yawDelta;
       pitch -= progression * this.pitchDelta;
-	if (this.isInterior) {
-      if (pitch < -1 * 0.3) {
-        pitch = -1 * 0.3;
-      } else if (pitch > 1.3) {
-        pitch = 1.3;
-      }
-    }	
+	// if (this.isInterior) {
+  //     if (pitch < -1 * 0.3) {
+  //       pitch = -1 * 0.3;
+  //     } else if (pitch > 1.3) {
+  //       pitch = 1.3;
+  //     }
+  //   }	
       view.yaw = yaw;
       view.pitch = pitch;
 
