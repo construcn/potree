@@ -427,6 +427,7 @@ export class OrientedImageLoader {
       viewer.scene.orientedImages[0].focused = image;
       const tmpImagePath = `${imagesPath}/thumbnails/${target.id}`;
       let texture = await loadImageTexture(tmpImagePath);
+      updateTexture(texture);
       if (sendEvent) {
         const event = new CustomEvent("imageLoad", {
           detail: {
@@ -436,7 +437,6 @@ export class OrientedImageLoader {
         });
         document.dispatchEvent(event);
       }
-      updateTexture(texture);
       setTimeout(() => {
         orientedImageControls.capture(image);
       }, 100);
