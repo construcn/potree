@@ -2,18 +2,17 @@
 precision mediump float;
 precision mediump int;
 
-attribute vec3 position;
-attribute vec2 uv;
+in vec3 position; // Use 'in' instead of 'attribute'
+in vec2 uv;
 
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 
-varying vec2 vUv;
+out vec2 vUv; // Use 'out' instead of 'varying' for outputs to the fragment shader
 
 void main() {
-	vUv = uv;
-	
-	vec4 mvPosition = modelViewMatrix * vec4(position,1.0);
+    vUv = uv;
 
-	gl_Position = projectionMatrix * mvPosition;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
 }

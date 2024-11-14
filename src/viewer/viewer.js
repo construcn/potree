@@ -1428,7 +1428,7 @@ export class Viewer extends EventDispatcher{
 
 		let canvas = document.createElement("canvas");
 
-		let context = canvas.getContext('webgl', contextAttributes );
+		let context = canvas.getContext('webgl2', contextAttributes );
 
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true, 
@@ -1444,6 +1444,11 @@ export class Viewer extends EventDispatcher{
 		this.renderer.domElement.addEventListener('mousedown', () => {
 			this.renderer.domElement.focus();
 		});
+
+		if (context) {
+			console.log("WebGL Version:", context.getParameter(context.VERSION));
+			console.log("GLSL Version:", context.getParameter(context.SHADING_LANGUAGE_VERSION));
+		}
 		//this.renderer.domElement.focus();
 
 		// NOTE: If extension errors occur, pass the string into this.renderer.extensions.get(x) before enabling

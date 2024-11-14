@@ -111,7 +111,7 @@ export class AnimationPath{
 	}
 
 	getGeometry () {
-		let geometry = new THREE.Geometry();
+		let geometry = new THREE.BufferGeometry();
 
 		let samples = 500;
 		let i = 0;

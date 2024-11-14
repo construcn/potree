@@ -67,38 +67,41 @@ export class TransformationTool {
 		this.initializeRotationHandles();
 
 
-		let boxFrameGeometry = new THREE.Geometry();
-		{
-			// bottom
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
-			// top
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
-			// sides
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-		}
-		this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0xffff00}));
+		let boxFrameGeometry = new THREE.BufferGeometry();
+
+		// Define the unique vertices for the box corners
+		const vertices = [
+			-0.5, -0.5,  0.5,  // 0: Bottom front-left
+			 0.5, -0.5,  0.5,  // 1: Bottom front-right
+			 0.5, -0.5, -0.5,  // 2: Bottom back-right
+			-0.5, -0.5, -0.5,  // 3: Bottom back-left
+			-0.5,  0.5,  0.5,  // 4: Top front-left
+			 0.5,  0.5,  0.5,  // 5: Top front-right
+			 0.5,  0.5, -0.5,  // 6: Top back-right
+			-0.5,  0.5, -0.5   // 7: Top back-left
+		];
+
+		// Define pairs of vertex indices to form the edges of the box
+		const indices = [
+			// bottom edges
+			0, 1, 1, 2, 2, 3, 3, 0,
+
+			// top edges
+			4, 5, 5, 6, 6, 7, 7, 4,
+
+			// side edges
+			0, 4, 1, 5, 2, 6, 3, 7
+		];
+
+		// Set the position attribute for vertices
+		boxFrameGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+		// Set the indices attribute for lines
+		boxFrameGeometry.setIndex(indices);
+
+		// Create the LineSegments and add it to the scene
+		this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({ color: 0xffff00 }));
 		this.scene.add(this.frame);
+
 
 		
 	}
