@@ -56,7 +56,9 @@ export class EventDispatcher{
 
 		const listeners = this._listeners;
 
-		return listeners[type] !== undefined && listeners[type].indexOf(listener) !== - 1;
+		const listnersToString = listeners[ type ].map((listner)=>(listner.toString()))
+
+		return listeners[ type ] !== undefined && listnersToString.indexOf( listener.toString() ) !== - 1;
 	}
 
 	removeEventListener(type, listener){

@@ -15,7 +15,7 @@ libs/CesiumUnminified
 /examples/page.html
 /resources/icons/index.html
 /examples/page.html
-
+/commands.txt
 /pointclouds/retz
 /pointclouds/NVIDIA_Ph01-20160403_tiles_converted
 /pointclouds/D
@@ -31,3 +31,4 @@ libs/CesiumUnminified
 /pointclouds/morro_bay_converted
 /pointclouds/helimap_epalinges
 pointclouds/F
+package-lock.json

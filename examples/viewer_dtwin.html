@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	
+	
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script type="module">
+
+
+		function getParameterByName(name, url = window.location.href) {
+			name = name.replace(/[\[\]]/g, '\\$&');
+			var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+				results = regex.exec(url);
+			if (!results) return null;
+			if (!results[2]) return '';
+			return decodeURIComponent(results[2].replace(/\+/g, ' '));
+		}
+
+		// const inProjectID = getParameterByName('pid');
+		// const inTilesetID = getParameterByName('sid');
+		// console.log(inProjectID, inTilesetID)
+		const DEFAULT_POINTCLOUD_TYPE = "cloud.json"
+		const pointCloudTypes = ["cloud.json", "ept.json", "metadata.json"]
+		var selectedPointCloudType = DEFAULT_POINTCLOUD_TYPE
+		
+
+		const inPath = getParameterByName('path');
+		console.log(inPath)
+
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(false);
+		viewer.setFOV(60);
+		viewer.setPointBudget(10_000_000);
+		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
+		viewer.useHQ = true;
+		
+		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			$("#menu_clipping").next().show();
+			viewer.toggleSidebar();
+		});
+
+		try {
+			let loadEvents = await Promise.allSettled(pointCloudTypes.map(type => fetch(`${inPath}/${type}`)));
+
+			for(let event of loadEvents ) {
+				if (event.value.status == 200) {
+					selectedPointCloudType = event.value.url.substring(event.value.url.lastIndexOf('/') + 1)
+				}
+			}
+		} catch (error) {
+			console.log("dTwinViewer in Catch : ", error);
+		}
+
+		// Load and add point cloud to scene
+		// Potree.loadPointCloud(`https://digitrack-projects.s3.ap-south-1.amazonaws.com/${inProjectID}/snapshots/${inTilesetID}/output/pointcloud/cloud.json`, "sigeom.sa", e => {
+			Potree.loadPointCloud(`${inPath}/${selectedPointCloudType}`, "sigeom.sa", e => {
+			let scene = viewer.scene;
+			let pointcloud = e.pointcloud;
+			
+			let material = pointcloud.material;
+			material.size = 0.15;
+			material.minSize = 0.20;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+			material.shape = Potree.PointShape.SQUARE;
+			
+			scene.addPointCloud(pointcloud);
+			
+			const urlParams = new URLSearchParams(window.location.search)
+			const positionParam = urlParams.get('position')
+			console.log(positionParam)
+			if(positionParam) {
+				try {
+					const position = JSON.parse(positionParam)
+					// scene.view.setView(
+					// 	[589974.341, 231698.397, 986.146],
+					// 	[589851.587, 231428.213, 715.634],
+					// );
+					scene.view.setView(position.camera, position.target);
+				} catch (e) { 
+					console.log(e);
+					viewer.fitToScreen();
+				 }
+			} else {
+				viewer.fitToScreen();
+			}
+		});
+
+	</script>
+	
+	
+  </body>
+</html>

@@ -124,6 +124,8 @@ export class View{
 
 	setView(position, target, duration = 0, callback = null){
 
+		let changeEvent = new CustomEvent("camerachange");
+
 		let endPosition = null;
 		if(position instanceof Array){
 			endPosition = new THREE.Vector3(...position);
@@ -149,6 +151,7 @@ export class View{
 		if(duration === 0){
 			this.position.copy(endPosition);
 			this.lookAt(endTarget);
+			// document.dispatchEvent(changeEvent);
 		}else{
 			let value = {x: 0};
 			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
@@ -174,6 +177,7 @@ export class View{
 
 				this.position.copy(pos);
 				this.lookAt(target);
+				document.dispatchEvent(changeEvent);
 
 			});
 
@@ -183,6 +187,7 @@ export class View{
 				if(callback){
 					callback();
 				}
+				document.dispatchEvent(changeEvent);
 			});
 		}
 

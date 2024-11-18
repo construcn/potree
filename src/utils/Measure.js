@@ -35,8 +35,8 @@ function createHeightLabel(){
 	const heightLabel = new TextSprite('');
 
 	heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-	heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-	heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.3});
+	heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 	heightLabel.fontsize = 16;
 	heightLabel.material.depthTest = false;
 	heightLabel.material.opacity = 1;
@@ -49,8 +49,8 @@ function createAreaLabel(){
 	const areaLabel = new TextSprite('');
 
 	areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-	areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-	areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.3});
+	areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3})
 	areaLabel.fontsize = 16;
 	areaLabel.material.depthTest = false;
 	areaLabel.material.opacity = 1;
@@ -63,8 +63,8 @@ function createCircleRadiusLabel(){
 	const circleRadiusLabel = new TextSprite("");
 
 	circleRadiusLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-	circleRadiusLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-	circleRadiusLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	circleRadiusLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.3});
+	circleRadiusLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 	circleRadiusLabel.fontsize = 16;
 	circleRadiusLabel.material.depthTest = false;
 	circleRadiusLabel.material.opacity = 1;
@@ -299,7 +299,14 @@ export class Measure extends THREE.Object3D {
 		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
+		this.draggable = true;
+
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+		this.lineMaterial = new LineMaterial({
+			color: 0xff0000, 
+			linewidth: 2, 
+			resolution:  new THREE.Vector2(1000, 1000),
+		});
 		this.color = new THREE.Color(0xff0000);
 
 		this.spheres = [];
@@ -363,15 +370,7 @@ export class Measure extends THREE.Object3D {
 					0, 0, 0,
 			]);
 
-			let lineMaterial = new LineMaterial({
-				color: 0xff0000, 
-				linewidth: 2, 
-				resolution:  new THREE.Vector2(1000, 1000),
-			});
-
-			lineMaterial.depthTest = false;
-
-			let edge = new Line2(lineGeometry, lineMaterial);
+			let edge = new Line2(lineGeometry, this.lineMaterial);
 			edge.visible = true;
 
 			this.add(edge);
@@ -380,8 +379,8 @@ export class Measure extends THREE.Object3D {
 
 		{ // edge labels
 			let edgeLabel = new TextSprite();
-			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.3});
+			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			edgeLabel.material.depthTest = false;
 			edgeLabel.visible = false;
 			edgeLabel.fontsize = 16;
@@ -391,8 +390,8 @@ export class Measure extends THREE.Object3D {
 
 		{ // angle labels
 			let angleLabel = new TextSprite();
-			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.3});
+			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			angleLabel.fontsize = 16;
 			angleLabel.material.depthTest = false;
 			angleLabel.material.opacity = 1;
@@ -403,8 +402,8 @@ export class Measure extends THREE.Object3D {
 
 		{ // coordinate labels
 			let coordinateLabel = new TextSprite();
-			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.3});
+			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			coordinateLabel.fontsize = 16;
 			coordinateLabel.material.depthTest = false;
 			coordinateLabel.material.opacity = 1;
@@ -415,6 +414,7 @@ export class Measure extends THREE.Object3D {
 
 		{ // Event Listeners
 			let drag = (e) => {
+				if(!this.draggable) return;
 				let I = Utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
@@ -525,6 +525,55 @@ export class Measure extends THREE.Object3D {
 		this.update();
 	};
 
+	det(a){
+		return a[0][0]*a[1][1]*a[2][2] + a[0][1]*a[1][2]*a[2][0] + a[0][2]*a[1][0]*a[2][1] - a[0][2]*a[1][1]*a[2][0] - a[0][1]*a[1][0]*a[2][2] - a[0][0]*a[1][2]*a[2][1]
+	};
+	
+	unit_normal(a, b, c){
+		const x = this.det([[1,a.y,a.z],
+			[1,b.y,b.z],
+			[1,c.y,c.z]])
+		const y = this.det([[a.x,1,a.z],
+			[b.x,1,b.z],
+			[c.x,1,c.z]])
+		const z = this.det([[a.x,a.y,1],
+			[b.x,b.y,1],
+			[c.x,c.y,1]])
+		const magnitude = (x**2 + y**2 + z**2)**0.5;
+		return([x/magnitude, y/magnitude, z/magnitude])
+	}
+
+	dot(a, b){
+		return(a[0]*b[0] + a[1]*b[1] + a[2]*b[2])
+	}
+	
+	cross(a, b){
+		const x = a.y * b.z - a.z * b.y
+		const y = a.z * b.x - a.x * b.z
+		const z = a.x * b.y - a.y * b.x
+		return([x, y, z])
+	}
+
+	area(){
+		if(this.points.length < 3){
+			return 0
+		}
+
+		let total = [0, 0, 0];
+
+		for (let i = 0; i < this.points.length; i++) {
+			let vi1 = this.points[i].position;
+			let vi2 = (i === this.points.length - 1) ? this.points[0].position : this.points[i + 1].position;
+			let prod = this.cross(vi1, vi2);
+
+			total[0] += prod[0];
+			total[1] += prod[1];
+			total[2] += prod[2];
+		}
+		   const result = this.dot(total, this.unit_normal(this.points[0].position, this.points[1].position, this.points[2].position))
+		return(result/2 > 0 ? result/2 : -1*result/2)
+	}
+
 	getArea () {
 		let area = 0;
 		let j = this.points.length - 1;
@@ -602,6 +651,52 @@ export class Measure extends THREE.Object3D {
 	// 	// const r = p0.position.distanceTo(p1.position);
 		
 	// }
+
+	customFloor(number) {
+		// Check if the number is already an integer
+		if (Number.isInteger(number)) {
+			return number;
+		}
+	
+		// If the number is negative, subtract 1 before converting to an integer
+		if (number < 0) {
+			return parseInt(number.toString().split('.')[0]) - 1;
+		}
+	
+		// If the number is positive, simply convert to an integer
+		return parseInt(number.toString().split('.')[0]);
+	}
+
+	getFractionFromDecimal(fraction){
+		const gcd = function(a, b) {
+			if (b < 0.0000001) return a;               
+		
+			return gcd(b, Math.floor(a % b));          
+		};
+		
+		const len = fraction.toString().length - 2;
+		
+		let denominator = Math.pow(10, len);
+		let numerator = fraction * denominator;
+		
+		const divisor = gcd(numerator, denominator);
+		
+		numerator /= divisor;                        
+		denominator /= divisor;
+
+		if(denominator === 1){
+			return(numerator);
+		}
+
+		if(numerator === denominator){
+			return(numerator/denominator);
+		}
+		
+		if(numerator > denominator){
+			return(Math.floor(numerator/denominator) + "-" + Math.floor(numerator%denominator) + "/" + denominator);
+		}
+		return(Math.floor(numerator) + '/' + Math.floor(denominator));
+	}
 
 	update () {
 		if (this.points.length === 0) {
@@ -681,12 +776,20 @@ export class Measure extends THREE.Object3D {
 
 				let suffix = "";
 				if(this.lengthUnit != null && this.lengthUnitDisplay != null){
-					distance = distance / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+					distance = distance * (this.lengthUnit.unitspermeter || this.lengthUnitDisplay.unitspermeter);  //convert to meters then to the display unit
 					suffix = this.lengthUnitDisplay.code;
 				}
 
 				let txtLength = Utils.addCommas(distance.toFixed(2));
-				edgeLabel.setText(`${txtLength} ${suffix}`);
+				// edgeLabel.setText(`${txtLength} ${suffix}`);
+				if(this.lengthUnit && this.lengthUnit.code === 'ft'){
+					//convertion of ft to ft-inches
+					var feet = Math.floor(distance);
+					var inches = (distance - feet) * 12;
+					edgeLabel.setText(`${feet}' ${this.getFractionFromDecimal(inches.toFixed(1))}''`);
+				}else{
+					edgeLabel.setText(`${txtLength} ${suffix}`);
+				}
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -750,13 +853,21 @@ export class Measure extends THREE.Object3D {
 
 				let suffix = "";
 				if(this.lengthUnit != null && this.lengthUnitDisplay != null){
-					height = height / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+					height = height * (this.lengthUnit.unitspermeter || this.lengthUnitDisplay.unitspermeter);  //convert to meters then to the display unit
 					suffix = this.lengthUnitDisplay.code;
 				}
 
 				let txtHeight = Utils.addCommas(height.toFixed(2));
 				let msg = `${txtHeight} ${suffix}`;
-				this.heightLabel.setText(msg);
+				// this.heightLabel.setText(msg);
+				if(this.lengthUnit && this.lengthUnit.code === 'ft'){
+					//convertion of ft to ft-inches
+					var feet = Math.floor(height);
+					var inches = (height - feet) * 12;
+					this.heightLabel.setText(`${feet}' ${this.getFractionFromDecimal(inches.toFixed(1))}''`);
+				}else{
+					this.heightLabel.setText(msg);
+				}
 			}
 		}
 
@@ -818,11 +929,12 @@ export class Measure extends THREE.Object3D {
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let area = this.getArea();
+			// let area = this.getArea();
+			let area = this.area();
 
 			let suffix = "";
 			if(this.lengthUnit != null && this.lengthUnitDisplay != null){
-				area = area / Math.pow(this.lengthUnit.unitspermeter, 2) * Math.pow(this.lengthUnitDisplay.unitspermeter, 2);  //convert to square meters then to the square display unit
+				area = area * (Math.pow(this.lengthUnit.unitspermeter || this.lengthUnitDisplay.unitspermeter, 2));
 				suffix = this.lengthUnitDisplay.code;
 			}
 
