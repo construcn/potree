@@ -114,7 +114,7 @@ export class BoxVolume extends Volume{
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		boxGeometry.computeBoundingBox();
 
-		let boxFrameGeometry = new THREE.Geometry();
+		let boxFrameGeometry = new THREE.BoxGeometry();
 		{
 			let Vector3 = THREE.Vector3;
 
@@ -229,7 +229,7 @@ export class SphereVolume extends Volume{
 		this.label.visible = false;
 
 
-		let frameGeometry = new THREE.Geometry();
+		let frameGeometry = new THREE.BufferGeometry();
 		{
 			let steps = 64;
 			let uSegments = 8;

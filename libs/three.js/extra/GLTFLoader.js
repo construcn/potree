@@ -60,7 +60,7 @@ import {
 	Vector2,
 	Vector3,
 	VectorKeyframeTrack,
-	sRGBEncoding
+	SRGBColorSpace
 } from '../../../build/three.module.js';
 
 var GLTFLoader = ( function () {
@@ -2893,8 +2893,8 @@ var GLTFLoader = ( function () {
 			if ( materialDef.name ) material.name = materialDef.name;
 
 			// baseColorTexture, emissiveTexture, and specularGlossinessTexture use sRGB encoding.
-			if ( material.map ) material.map.encoding = sRGBEncoding;
-			if ( material.emissiveMap ) material.emissiveMap.encoding = sRGBEncoding;
+			if ( material.map ) material.map.encoding = SRGBColorSpace;
+			if ( material.emissiveMap ) material.emissiveMap.encoding = SRGBColorSpace;
 
 			assignExtrasToUserData( material, materialDef );
 

@@ -25,7 +25,7 @@ function paramThreeToGL(_gl, p) {
 	if (p === THREE.UnsignedByteType) return _gl.UNSIGNED_BYTE;
 	if (p === THREE.UnsignedShort4444Type) return _gl.UNSIGNED_SHORT_4_4_4_4;
 	if (p === THREE.UnsignedShort5551Type) return _gl.UNSIGNED_SHORT_5_5_5_1;
-	if (p === THREE.UnsignedShort565Type) return _gl.UNSIGNED_SHORT_5_6_5;
+	// if (p === THREE.UnsignedShort565Type) return _gl.UNSIGNED_SHORT_5_6_5;
 
 	if (p === THREE.ByteType) return _gl.BYTE;
 	if (p === THREE.ShortType) return _gl.SHORT;

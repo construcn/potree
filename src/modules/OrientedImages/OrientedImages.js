@@ -46,15 +46,22 @@ function createMaterial() {
 }
 
 const planeGeometry = new THREE.PlaneGeometry(1, 1);
-const lineGeometry = new THREE.Geometry();
+const lineGeometry = new THREE.BufferGeometry();
 
-lineGeometry.vertices.push(
-  new THREE.Vector3(-0.5, -0.5, 0),
-  new THREE.Vector3(0.5, -0.5, 0),
-  new THREE.Vector3(0.5, 0.5, 0),
-  new THREE.Vector3(-0.5, 0.5, 0),
-  new THREE.Vector3(-0.5, -0.5, 0)
-);
+const vertices = new Float32Array([
+	new THREE.Vector3(-0.5, -0.5, 0),
+	new THREE.Vector3( 0.5, -0.5, 0),
+	new THREE.Vector3( 0.5,  0.5, 0),
+	new THREE.Vector3(-0.5,  0.5, 0),
+	// new THREE.Vector3(-0.5, -0.5, 0),
+]);
+
+const indices = [
+	0,1,2,3,0
+]
+
+lineGeometry.setIndex(indices)
+lineGeometry.setAttribute('position', new THREE.BufferAttribute( vertices, 3 ))
 
 export class OrientedImage {
   constructor(id) {
@@ -76,7 +83,7 @@ export class OrientedImage {
   }
 
   set(position, rotation, dimension, fov) {
-    let radians = rotation.map(THREE.Math.degToRad);
+    let radians = rotation.map(THREE.MathUtils.degToRad);
 
     this.position.set(...position);
     this.mesh.position.set(...position);
@@ -98,7 +105,7 @@ export class OrientedImage {
     mesh.updateMatrixWorld();
     var dir = new THREE.Vector3();
     mesh.getWorldDirection(dir);
-    const alpha = THREE.Math.degToRad(fov / 2);
+    const alpha = THREE.MathUtils.degToRad(fov / 2);
     const d = -0.5 / Math.tan(alpha);
     const move = dir.clone().multiplyScalar(d);
     mesh.position.add(move);
@@ -156,7 +163,7 @@ export class OrientedImageLoader {
     const f = parseFloat(doc.getElementsByTagName("f")[0].textContent);
 
     let a = height / 2 / f;
-    let fov = 2 * THREE.Math.radToDeg(Math.atan(a));
+    let fov = 2 * THREE.MathUtils.radToDeg(Math.atan(a));
 
     const params = {
       path: path,
@@ -212,7 +219,7 @@ export class OrientedImageLoader {
     const f = parseFloat(imgData.camFocal);
 
     let a = height / 2 / f;
-    let fov = 2 * THREE.Math.radToDeg(Math.atan(a));
+    let fov = 2 * THREE.MathUtils.radToDeg(Math.atan(a));
 
     const params = {
       path: path,
@@ -351,8 +358,8 @@ export class OrientedImageLoader {
             const mesh = img.mesh;
             const dir = mesh.getWorldDirection();
             const pos = mesh.position;
-            const alpha = THREE.Math.degToRad(fov / 2);
-            const d = 0.5 / Math.tan(alpha);
+            const alpha = THREE.MathUtils.degToRad(fov / 2);
+            const d = 0.5 / MathUtils.tan(alpha);
             const newCamPos = pos.clone().add(dir.clone().multiplyScalar(d));
             const newCamDir = pos.clone().sub(newCamPos);
             const newCamTarget = new THREE.Vector3().addVectors(
@@ -493,10 +500,10 @@ export class OrientedImageLoader {
         const camPos = camera.position;
         const d = camPos.distanceTo(imgPos);
 
-        const minSize = 1; // in degrees of fov
-        const a = THREE.Math.degToRad(minSize);
-        let r = d * Math.tan(a);
-        r = Math.max(r, 1);
+				const minSize = 1; // in degrees of fov
+				const a = THREE.MathUtils.degToRad(minSize);
+				let r = d * Math.tan(a);
+				r = Math.max(r, 1);
 
         image.mesh.scale.set(r * aspect, r, 1);
         image.line.scale.set(r * aspect, r, 1);

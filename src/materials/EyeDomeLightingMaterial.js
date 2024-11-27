@@ -39,6 +39,7 @@ export class EyeDomeLightingMaterial extends THREE.RawShaderMaterial{
 		});
 
 		this.neighbourCount = 8;
+		this.glslVersion = THREE.GLSL3;
 	}
 
 	getDefines() {

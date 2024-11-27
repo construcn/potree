@@ -1,11 +1,17 @@
 import {
 	BufferGeometry,
+	Color,
+	Data3DTexture,
 	FileLoader,
 	Float32BufferAttribute,
 	Loader,
+	LinearFilter,
 	Mesh,
-	MeshStandardMaterial
-} from '../../../build/three.module.js';
+	MeshStandardMaterial,
+	NearestFilter,
+	RedFormat,
+	SRGBColorSpace
+} from 'three';
 
 class VOXLoader extends Loader {
 
@@ -47,12 +53,19 @@ class VOXLoader extends Loader {
 
 		const data = new DataView( buffer );
 
-		const id = data.getInt32( 0, true );
+		const id = data.getUint32( 0, true );
 		const version = data.getUint32( 4, true );
 
-		if ( id !== 542658390 || version !== 150 ) {
+		if ( id !== 542658390 ) {
 
-			console.error( 'Not a valid VOX file' );
+			console.error( 'THREE.VOXLoader: Invalid VOX file.' );
+			return;
+
+		}
+
+		if ( version !== 150 ) {
+
+			console.error( 'THREE.VOXLoader: Invalid VOX file. Unsupported version:', version );
 			return;
 
 		}
@@ -103,18 +116,18 @@ class VOXLoader extends Loader {
 
 			for ( let j = 0; j < 4; j ++ ) {
 
-				id += String.fromCharCode( data.getInt8( i ++, true ) );
+				id += String.fromCharCode( data.getUint8( i ++ ) );
 
 			}
 
-			const chunkSize = data.getInt32( i, true ); i += 4;
-			data.getInt32( i, true ); i += 4; // childChunks
+			const chunkSize = data.getUint32( i, true ); i += 4;
+			i += 4; // childChunks
 
 			if ( id === 'SIZE' ) {
 
-				const x = data.getInt32( i, true ); i += 4;
-				const y = data.getInt32( i, true ); i += 4;
-				const z = data.getInt32( i, true ); i += 4;
+				const x = data.getUint32( i, true ); i += 4;
+				const y = data.getUint32( i, true ); i += 4;
+				const z = data.getUint32( i, true ); i += 4;
 
 				chunk = {
 					palette: DEFAULT_PALETTE,
@@ -127,8 +140,8 @@ class VOXLoader extends Loader {
 
 			} else if ( id === 'XYZI' ) {
 
-				const numVoxels = data.getInt32( i, true ); i += 4;
-				chunk.data = new Int8Array( buffer, i, numVoxels * 4 );
+				const numVoxels = data.getUint32( i, true ); i += 4;
+				chunk.data = new Uint8Array( buffer, i, numVoxels * 4 );
 
 				i += numVoxels * 4;
 
@@ -138,7 +151,7 @@ class VOXLoader extends Loader {
 
 				for ( let j = 0; j < 256; j ++ ) {
 
-					palette[ j + 1 ] = data.getInt32( i, true ); i += 4;
+					palette[ j + 1 ] = data.getUint32( i, true ); i += 4;
 
 				}
 
@@ -180,6 +193,8 @@ class VOXMesh extends Mesh {
 		const nz = [ 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0 ];
 		const pz = [ 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1 ];
 
+		const _color = new Color();
+
 		function add( tile, x, y, z, r, g, b ) {
 
 			x -= size.x / 2;
@@ -188,8 +203,10 @@ class VOXMesh extends Mesh {
 
 			for ( let i = 0; i < 18; i += 3 ) {
 
+				_color.setRGB( r, g, b, SRGBColorSpace );
+
 				vertices.push( tile[ i + 0 ] + x, tile[ i + 1 ] + y, tile[ i + 2 ] + z );
-				colors.push( r, g, b );
+				colors.push( _color.r, _color.g, _color.b );
 
 			}
 
@@ -247,9 +264,14 @@ class VOXMesh extends Mesh {
 		geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
 		geometry.computeVertexNormals();
 
-		if ( hasColors ) geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
+		const material = new MeshStandardMaterial();
 
-		const material = new MeshStandardMaterial( { vertexColors: hasColors } );
+		if ( hasColors ) {
+
+			geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
+			material.vertexColors = true;
+
+		}
 
 		super( geometry, material );
 
@@ -257,4 +279,40 @@ class VOXMesh extends Mesh {
 
 }
 
-export { VOXLoader, VOXMesh };
+class VOXData3DTexture extends Data3DTexture {
+
+	constructor( chunk ) {
+
+		const data = chunk.data;
+		const size = chunk.size;
+
+		const offsety = size.x;
+		const offsetz = size.x * size.y;
+
+		const array = new Uint8Array( size.x * size.y * size.z );
+
+		for ( let j = 0; j < data.length; j += 4 ) {
+
+			const x = data[ j + 0 ];
+			const y = data[ j + 1 ];
+			const z = data[ j + 2 ];
+
+			const index = x + ( y * offsety ) + ( z * offsetz );
+
+			array[ index ] = 255;
+
+		}
+
+		super( array, size.x, size.y, size.z );
+
+		this.format = RedFormat;
+		this.minFilter = NearestFilter;
+		this.magFilter = LinearFilter;
+		this.unpackAlignment = 1;
+		this.needsUpdate = true;
+
+	}
+
+}
+
+export { VOXLoader, VOXMesh, VOXData3DTexture };

@@ -1,9 +1,10 @@
+#version 300 es
 
 precision mediump float;
 precision mediump int;
 
-attribute vec3 position;
-attribute vec3 color;
+in vec3 position;
+in vec3 color;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -22,12 +23,10 @@ uniform float uVNStart;
 
 uniform sampler2D visibleNodes;
 
-varying float vLinearDepth;
-varying vec3 vColor;
+out float vLinearDepth;
+out vec3 vColor;
 
 #define PI 3.141592653589793
-
-
 
 // ---------------------
 // OCTREE
@@ -51,7 +50,6 @@ float numberOfOnes(float number, float index){
 	return numOnes;
 }
 
-
 /**
  * checks whether the bit at index is 1
  * number is treated as if it were an integer in the range 0-255
@@ -61,12 +59,10 @@ bool isBitSet(float number, float index){
 	return mod(floor(number / pow(2.0, index)), 2.0) != 0.0;
 }
 
-
 /**
  * find the LOD at the point position
  */
 float getLOD(){
-	
 	vec3 offset = vec3(0.0, 0.0, 0.0);
 	float iOffset = uVNStart;
 	float depth = uLevel;
@@ -77,7 +73,7 @@ float getLOD(){
 		index3d = floor(index3d + 0.5);
 		float index = 4.0 * index3d.x + 2.0 * index3d.y + index3d.z;
 		
-		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
+		vec4 value = texture(visibleNodes, vec2(iOffset / 2048.0, 0.0));
 		float mask = value.r * 255.0;
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
@@ -93,7 +89,6 @@ float getLOD(){
 		
 	return depth;
 }
-
 #endif
 
 float getPointSize(){
@@ -108,7 +103,7 @@ float getPointSize(){
 		pointSize = size;
 	#elif defined attenuated_point_size
 		if(uUseOrthographicCamera){
-			pointSize = size;			
+			pointSize = size;
 		}else{
 			pointSize = pointSize * projFactor;
 		}
@@ -130,13 +125,10 @@ float getPointSize(){
 	return pointSize;
 }
 
-
 void main() {
-
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
 	vLinearDepth = gl_Position.w;
 
 	float pointSize = getPointSize();
 	gl_PointSize = pointSize;
-
 }

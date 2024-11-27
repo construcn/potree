@@ -394,7 +394,7 @@ export class Scene extends EventDispatcher {
       texture.minFilter = texture.magFilter = THREE.NearestFilter;
       texture.minFilter = texture.magFilter = THREE.LinearFilter;
       let bg = new THREE.Mesh(
-        new THREE.PlaneBufferGeometry(2, 2, 1),
+        new THREE.PlaneGeometry(2, 2, 1),
         new THREE.MeshBasicMaterial({
           map: texture,
         })
