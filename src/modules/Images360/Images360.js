@@ -181,11 +181,11 @@ export class Images360 extends EventDispatcher{
 		});
 			let {course, pitch, roll} = image360;
 			this.sphere.rotation.set(
-				THREE.MathUtils.degToRad(+roll + 90),
-				THREE.MathUtils.degToRad(-pitch),
-				THREE.MathUtils.degToRad(-course + 90),
-				"ZYX"
-		);
+				THREE.MathUtils.degToRad(course),
+				THREE.MathUtils.degToRad(pitch),
+				THREE.MathUtils.degToRad(+roll),
+				"XYZ"
+			);
 		this.sphere.position.set(...image360.position);
 		
 		let target = new THREE.Vector3(...image360.position);
