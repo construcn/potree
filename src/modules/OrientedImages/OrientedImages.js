@@ -444,9 +444,9 @@ export class OrientedImageLoader {
         });
         document.dispatchEvent(event);
       }
-      setTimeout(() => {
-        orientedImageControls.capture(image);
-      }, 100);
+      // setTimeout(() => {
+      //   orientedImageControls.capture(image);
+      // }, 100);
       const imagePath = `${imagesPath}/${target.id}`;
       let texture_org = await loadImageTexture(imagePath);
       updateTexture(texture_org);
