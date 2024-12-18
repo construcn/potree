@@ -135,8 +135,8 @@
 	position: absolute;
 	left: 4px;
 	top: 4px; 
-	width: 10px; 
-	height: 10px; 
+	/* width: 10px; 
+	height: 10px;  */
 	z-index: 10000;
 	float: left;
 }
@@ -164,6 +164,32 @@
 }
 
 #potree_render_area{
+	position: 	absolute;
+	/*background: linear-gradient(-90deg, red, yellow);*/
+	top: 		0px;
+	bottom: 	0px;
+	left: 		0px;
+	right: 		0px;
+	overflow: 	hidden;
+	z-index: 	1;
+	-webkit-transition: left .35s;
+	transition: left .35s;
+}
+
+#potreeViewer_1{
+	position: 	absolute;
+	/*background: linear-gradient(-90deg, red, yellow);*/
+	top: 		0px;
+	bottom: 	0px;
+	left: 		0px;
+	right: 		0px;
+	overflow: 	hidden;
+	z-index: 	1;
+	-webkit-transition: left .35s;
+	transition: left .35s;
+}
+
+#potreeViewer_2{
 	position: 	absolute;
 	/*background: linear-gradient(-90deg, red, yellow);*/
 	top: 		0px;
@@ -527,7 +553,10 @@ body{
 	user-select: 			text;
 }
 
-
+.flex_dis{
+	display: flex;
+	flex-wrap: wrap;
+}
 
 .divider {
 	display: 		block;
