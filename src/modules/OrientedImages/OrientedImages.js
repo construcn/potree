@@ -53,7 +53,7 @@ const vertices = new Float32Array([
 	new THREE.Vector3( 0.5, -0.5, 0),
 	new THREE.Vector3( 0.5,  0.5, 0),
 	new THREE.Vector3(-0.5,  0.5, 0),
-	// new THREE.Vector3(-0.5, -0.5, 0),
+	new THREE.Vector3(-0.5, -0.5, 0),
 ]);
 
 const indices = [
@@ -176,7 +176,7 @@ export class OrientedImageLoader {
     return params;
   }
 
-  static async loadImageParams(path, tm) {
+  static async loadImageParams(path, tm, isLocal = false) {
     const response = await fetch(path);
     if (!response.ok) {
       console.error(`failed to load ${path}`);
@@ -191,18 +191,18 @@ export class OrientedImageLoader {
 
     imgData.camname.forEach((imgName, index) => {
       const rawPos = new THREE.Vector4(
-        Number.parseFloat(imgData.camX[index]),
-        Number.parseFloat(imgData.camY[index]),
-        Number.parseFloat(imgData.camZ[index]),
+        Number.parseFloat(isLocal ? imgData.camX[index] * 1000 : imgData.camX[index]),
+        Number.parseFloat(isLocal ? imgData.camY[index] * 1000 : imgData.camY[index]),
+        Number.parseFloat(isLocal ? imgData.camZ[index] * 1000 : imgData.camZ[index]),
         1
       );
       rawPos.applyMatrix4(tm);
 
       const params = {
         id: imgData.camname[index],
-        x: Number.parseFloat(imgData.camX[index]),
-        y: Number.parseFloat(imgData.camY[index]),
-        z: Number.parseFloat(imgData.camZ[index]),
+        x: Number.parseFloat(isLocal ? imgData.camX[index] * 1000 : imgData.camX[index]),
+        y: Number.parseFloat(isLocal ? imgData.camY[index] * 1000 : imgData.camY[index]),
+        z: Number.parseFloat(isLocal ? imgData.camZ[index] * 1000 : imgData.camZ[index]),
         x_tm: rawPos.x,
         y_tm: rawPos.y,
         z_tm: rawPos.z,
@@ -232,7 +232,7 @@ export class OrientedImageLoader {
     return [params, imageParams];
   }
 
-  static async load(imageParamsPath, imagesPath, viewer, tm_data) {
+  static async load(imageParamsPath, imagesPath, viewer, tm_data, isLocal = false) {
     const tStart = performance.now();
 
     let tmatrix, toffset;
@@ -241,7 +241,7 @@ export class OrientedImageLoader {
     toffset = tm_data.offset;
 
     const [cameraParams, imageParams] =
-      await OrientedImageLoader.loadImageParams(imageParamsPath, tmatrix);
+      await OrientedImageLoader.loadImageParams(imageParamsPath, tmatrix, isLocal);
 
     const orientedImageControls = new OrientedImageControls(viewer);
     const raycaster = new THREE.Raycaster();

@@ -275,6 +275,9 @@ export class Images360 extends EventDispatcher{
 						texture => {
 								//var sphereMaterial = new MeshBasicMaterial({ map: texture, side: DoubleSide });
                             	//image360.texture = sphereMaterial;
+								// texture.magFilter = THREE.NearestFilter;
+								texture.minFilter = THREE.LinearFilter;
+								// texture.anisotropy = this.viewer.renderer.capabilities.getMaxAnisotropy();
 								image360.texture = texture;
 								if (this.sphere) {
 									this.sphere.visible = true;
@@ -330,7 +333,7 @@ export class Images360 extends EventDispatcher{
 
 export class Images360Loader{
 
-	static async load(url, imgsUrl, viewer, tm_data, params = {}){
+	static async load(url, imgsUrl, viewer, tm_data, isLocal = false, params = {}){
 
 		if(!params.transform){
 			params.transform = {
@@ -353,7 +356,10 @@ export class Images360Loader{
 			let raw_position = imgData[imgName].position;
 			let rotation = imgData[imgName].rotation;
 			
-			const pos = new THREE.Vector4(raw_position[0], raw_position[1], raw_position[2], 1);
+			let pos = new THREE.Vector4(raw_position[0], raw_position[1], raw_position[2], 1);
+			if (isLocal == true) {
+				pos = new THREE.Vector4(raw_position[0] * 1000, raw_position[1] * 1000, raw_position[2] * 1000, 1);
+			}
 			pos.applyMatrix4(tmatrix);
 			const long = parseFloat(pos.x - toffset[0]);
 			const lat = parseFloat(pos.y - toffset[1]);
@@ -413,6 +419,7 @@ export class Images360Loader{
 			ringGroup.add( circleMesh );
 			images360.node.add(ringGroup);
 			image360.ringGroup=ringGroup
+			image360.ringGroup.visible=false;
 		}
 	}
 };
