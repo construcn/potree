@@ -17,6 +17,7 @@ export class NormalizationMaterial extends THREE.RawShaderMaterial{
 			vertexShader: this.getDefines() + Shaders['normalize.vs'],
 			fragmentShader: this.getDefines() + Shaders['normalize.fs'],
 		});
+		this.glslVersion = THREE.GLSL3;
 	}
 
 	getDefines() {

@@ -1,5 +1,4 @@
 
-#version 300 es
 #extension GL_EXT_frag_depth : enable
 
 // 

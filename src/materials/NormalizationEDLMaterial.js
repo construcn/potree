@@ -26,6 +26,7 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 		});
 
 		this.neighbourCount = 8;
+		this.glslVersion = THREE.GLSL3;
 	}
 
 	getDefines() {
