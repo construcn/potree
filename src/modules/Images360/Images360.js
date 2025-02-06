@@ -53,7 +53,7 @@ export class Images360 extends EventDispatcher{
 
 		this.addEventListener("mousedown", () => {
 			if(this.currentlyHovered && this.currentlyHovered.image360){
-				// this.focus(this.currentlyHovered.image360);
+				this.focus(this.currentlyHovered.image360);
 				const event = new CustomEvent("onRingClick", {
                     detail: {
                         viewer: this.viewer.canvasId,
@@ -350,7 +350,11 @@ export class Images360Loader{
 		let text = await response.text();
 		let imgData = JSON.parse(text);
 
-		let images360 = new Images360(viewer);
+		if (!this.instance) {
+			this.instance = new Images360(viewer);
+		}
+
+		let images360 = this.instance;
 
 		Object.keys(imgData).forEach(imgName => {
 			let raw_position = imgData[imgName].position;
@@ -376,6 +380,7 @@ export class Images360Loader{
 			image360.position = position;
 
 			images360.images.push(image360);
+			// images360.visibleRings.push(image360);
 		});
 
 		images360.images.sort(function (a, b) {
@@ -393,7 +398,7 @@ export class Images360Loader{
 			return fileANumber.localeCompare(fileBNumber);
 		});
 
-		 Images360Loader.createSceneNodes(images360);
+		//  Images360Loader.createSceneNodes(images360);
 			return images360;
 
 	}
