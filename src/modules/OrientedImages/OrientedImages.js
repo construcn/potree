@@ -49,11 +49,11 @@ const planeGeometry = new THREE.PlaneGeometry(1, 1);
 const lineGeometry = new THREE.BufferGeometry();
 
 const vertices = new Float32Array([
-	new THREE.Vector3(-0.5, -0.5, 0),
-	new THREE.Vector3( 0.5, -0.5, 0),
-	new THREE.Vector3( 0.5,  0.5, 0),
-	new THREE.Vector3(-0.5,  0.5, 0),
-	new THREE.Vector3(-0.5, -0.5, 0),
+  -0.5, -0.5, 0,
+   0.5, -0.5, 0,
+   0.5,  0.5, 0,
+  -0.5,  0.5, 0,
+  // -0.5, -0.5, 0
 ]);
 
 const indices = [
